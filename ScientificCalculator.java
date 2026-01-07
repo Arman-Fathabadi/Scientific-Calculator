@@ -425,7 +425,15 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         deleteButton.setBorder(createButtonBorder(buttonBg, darkMode));
         clearButton.setBorder(createButtonBorder(buttonBg, darkMode));
-        themeToggleButton.setBorder(createButtonBorder(buttonBg, darkMode));
+        if (darkMode) {
+            themeToggleButton.setBorder(createButtonBorder(buttonBg, darkMode));
+        } else {
+            themeToggleButton.setBorder(createButtonBorder(buttonBg, darkMode));
+        }
+
+        historyButton.setBackground(buttonBg);
+        historyButton.setForeground(foreground);
+        historyButton.setBorder(createButtonBorder(buttonBg, darkMode));
 
         JButton[] advButtons = {
                 sinhButton, coshButton, tanhButton, asinhButton, acoshButton,
@@ -451,28 +459,24 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         historyScrollPane.getViewport().setBackground(darkMode ? new Color(50, 50, 50) : Color.WHITE);
 
         clearHistoryButton.setBackground(buttonBg);
+        clearHistoryButton.setBackground(buttonBg);
         clearHistoryButton.setForeground(foreground);
+        clearHistoryButton.setBorder(createButtonBorder(buttonBg, darkMode));
 
         SwingUtilities.updateComponentTreeUI(frame);
         SwingUtilities.updateComponentTreeUI(historyFrame);
     }
 
     private Border createButtonBorder(Color baseColor, boolean darkMode) {
-        Color shadowColor = darkMode
-                ? new Color(Math.max(baseColor.getRed() - 45, 0),
-                        Math.max(baseColor.getGreen() - 45, 0),
-                        Math.max(baseColor.getBlue() - 45, 0), 180)
-                : new Color(Math.max(baseColor.getRed() - 65, 0),
-                        Math.max(baseColor.getGreen() - 65, 0),
-                        Math.max(baseColor.getBlue() - 65, 0), 160);
+        if (darkMode) {
+            return BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(100, 100, 100), 1),
+                    BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        }
 
-        Color highlightColor = darkMode
-                ? new Color(Math.min(baseColor.getRed() + 35, 255),
-                        Math.min(baseColor.getGreen() + 35, 255),
-                        Math.min(baseColor.getBlue() + 35, 255))
-                : new Color(Math.min(baseColor.getRed() + 45, 255),
-                        Math.min(baseColor.getGreen() + 45, 255),
-                        Math.min(baseColor.getBlue() + 45, 255));
+        Color highlightColor = new Color(Math.min(baseColor.getRed() + 45, 255),
+                Math.min(baseColor.getGreen() + 45, 255),
+                Math.min(baseColor.getBlue() + 45, 255));
 
         return BorderFactory.createCompoundBorder(
                 new SoftBevelBorder(BevelBorder.RAISED),
