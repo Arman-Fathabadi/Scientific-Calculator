@@ -995,10 +995,10 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 equalButton.doClick();
                 break;
             case KeyEvent.VK_BACK_SPACE:
+            case KeyEvent.VK_DELETE:
                 deleteButton.doClick();
                 break;
             case KeyEvent.VK_ESCAPE:
-            case KeyEvent.VK_DELETE:
                 clearButton.doClick();
                 break;
         }
