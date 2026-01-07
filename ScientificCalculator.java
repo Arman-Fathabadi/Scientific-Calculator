@@ -759,51 +759,97 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         // Hyperbolic, etc.
-        // Convert Button (Decimal -> Hex/Bin)
+        // Convert Button (Decimal <-> Hex/Bin/Oct)
         if (e.getSource() == conversionButton) {
-            if (currentExpression.isEmpty())
-                return;
-            try {
-                double val = Double.parseDouble(currentExpression);
-                long longVal = (long) val;
+            String[] options = {
+                    "Decimal -> Hex", "Decimal -> Binary", "Decimal -> Octal",
+                    "Hex -> Decimal", "Binary -> Decimal", "Octal -> Decimal"
+            };
 
-                String[] options = { "Hex", "Binary", "Octal" };
-                int choice = JOptionPane.showOptionDialog(frame, "Select conversion type:", "Convert",
-                        JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+            String choice = (String) JOptionPane.showInputDialog(frame,
+                    "Select conversion type:", "Convert",
+                    JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
-                String resultStr = "";
-                String prefix = "";
+            if (choice == null)
+                return; // Cancelled
 
-                if (choice == 0) { // Hex
-                    resultStr = Long.toHexString(longVal).toUpperCase();
-                    prefix = "Hex";
-                } else if (choice == 1) { // Binary
-                    resultStr = Long.toBinaryString(longVal);
-                    prefix = "Bin";
-                } else if (choice == 2) { // Octal
-                    resultStr = Long.toOctalString(longVal);
-                    prefix = "Oct";
-                } else {
-                    return; // Cancelled
+            // Conversions FROM Decimal (uses current screen value)
+            if (choice.startsWith("Decimal")) {
+                if (currentExpression.isEmpty())
+                    return;
+                try {
+                    double val = Double.parseDouble(currentExpression);
+                    long longVal = (long) val;
+                    String resultStr = "";
+                    String prefix = "";
+
+                    if (choice.contains("Hex")) {
+                        resultStr = Long.toHexString(longVal).toUpperCase();
+                        prefix = "Hex";
+                    } else if (choice.contains("Binary")) {
+                        resultStr = Long.toBinaryString(longVal);
+                        prefix = "Bin";
+                    } else if (choice.contains("Octal")) {
+                        resultStr = Long.toOctalString(longVal);
+                        prefix = "Oct";
+                    }
+
+                    clearTextArea();
+                    String output = prefix + "(" + longVal + ")=" + resultStr;
+                    appendStyled(output + "\n", resultStyle);
+
+                    lastFullExpression = output;
+                    lastExpression = resultStr;
+                    currentExpression = "";
+                    equalsClicked = true;
+                    operationClicked = false;
+                } catch (Exception ex) {
+                    appendStyled("\nError: Invalid input\n", errorStyle);
                 }
+            }
+            // Conversions TO Decimal (Prompts for input)
+            else {
+                String input = JOptionPane.showInputDialog(frame, "Enter value to convert:");
+                if (input == null || input.trim().isEmpty())
+                    return;
 
-                clearTextArea();
-                String output = prefix + "(" + longVal + ")=" + resultStr;
-                appendStyled(output + "\n", resultStyle);
+                try {
+                    int radix = 10;
+                    String prefix = "";
+                    if (choice.contains("Hex")) {
+                        radix = 16;
+                        prefix = "Hex";
+                    } else if (choice.contains("Binary")) {
+                        radix = 2;
+                        prefix = "Bin";
+                    } else if (choice.contains("Octal")) {
+                        radix = 8;
+                        prefix = "Oct";
+                    }
 
-                lastFullExpression = output;
-                lastExpression = resultStr;
-                currentExpression = "";
-                equalsClicked = true;
-                operationClicked = false;
-            } catch (Exception ex) {
-                appendStyled("\nError: Invalid input\n", errorStyle);
+                    long resultVal = Long.parseLong(input.trim(), radix);
+
+                    clearTextArea();
+                    String output = prefix + "(" + input.toUpperCase() + ")=" + resultVal;
+                    appendStyled(output + "\n", resultStyle);
+
+                    lastFullExpression = output;
+                    lastExpression = String.valueOf(resultVal);
+                    currentExpression = String.valueOf(resultVal);
+                    num1 = BigDecimal.valueOf(resultVal);
+                    equalsClicked = true;
+                    operationClicked = false;
+                } catch (NumberFormatException ex) {
+                    appendStyled("\nError: Invalid " + choice.split(" ")[0] + "\n", errorStyle);
+                }
             }
             return;
         }
 
         // Clear History
-        if (e.getSource() == clearHistoryButton) {
+        if (e.getSource() == clearHistoryButton)
+
+        {
             setTextContent(historyTextArea, "");
             return;
         }
