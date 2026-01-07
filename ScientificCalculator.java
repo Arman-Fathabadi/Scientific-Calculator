@@ -35,6 +35,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     JScrollPane historyScrollPane;
     JButton clearHistoryButton;
     Font fo = new Font("Arial", Font.BOLD, 13);
+    Font smallFont = new Font("Arial", Font.BOLD, 11);
 
     Color lightBackground = new Color(245, 245, 247);
     Color lightForeground = new Color(20, 20, 20);
@@ -65,7 +66,8 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     SimpleAttributeSet resultStyle = new SimpleAttributeSet();
     SimpleAttributeSet errorStyle = new SimpleAttributeSet();
 
-    // We'll keep track of the "current expression" plus the "last expression" for chained output
+    // We'll keep track of the "current expression" plus the "last expression" for
+    // chained output
     String currentExpression = "";
     String lastExpression = "";
     String lastFullExpression = ""; // To store the full expression for history
@@ -232,16 +234,16 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         graphButton = new JButton("Graph");
 
         JButton[] advButtons = {
-            sinhButton, coshButton, tanhButton, asinhButton, acoshButton,
-            atanhButton, lnButton, log2Button, logbButton, factorialButton,
-            permutationButton, combinationButton, matrixButton, complexButton, conversionButton,
-            modButton, absButton, ceilButton, floorButton, radDegToggleButton,
-            graphButton
+                sinhButton, coshButton, tanhButton, asinhButton, acoshButton,
+                atanhButton, lnButton, log2Button, logbButton, factorialButton,
+                permutationButton, combinationButton, matrixButton, complexButton, conversionButton,
+                modButton, absButton, ceilButton, floorButton, radDegToggleButton,
+                graphButton
         };
 
         for (JButton btn : advButtons) {
             btn.addActionListener(this);
-            btn.setFont(fo);
+            btn.setFont(smallFont);
             btn.setFocusable(false);
             btn.setBorderPainted(true);
             btn.setFocusPainted(false);
@@ -268,7 +270,6 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 frame.requestFocusInWindow(); // Request focus back to the main frame
             }
         });
-
 
         Border shadowBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(2, 2, 5, 5, new Color(160, 160, 160, 100)),
@@ -349,13 +350,15 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         advancedPanel.setBackground(background);
 
         // In dark mode, use a dark gray instead of black
-        textArea.setBackground(darkMode ? new Color(50,50,50) : Color.WHITE);
+        textArea.setBackground(darkMode ? new Color(50, 50, 50) : Color.WHITE);
         textArea.setForeground(foreground);
         textArea.setCaretColor(foreground);
 
         scrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(darkMode ? new Color(50,50,50) : new Color(170, 170, 180), 1),
+                BorderFactory.createLineBorder(darkMode ? new Color(50, 50, 50) : new Color(170, 170, 180), 1),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        scrollPane.setBackground(background);
+        scrollPane.getViewport().setBackground(darkMode ? new Color(50, 50, 50) : Color.WHITE);
 
         themeToggleButton.setText(darkMode ? "Light" : "Dark");
         themeToggleButton.setBackground(buttonBg);
@@ -425,11 +428,11 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         themeToggleButton.setBorder(createButtonBorder(buttonBg, darkMode));
 
         JButton[] advButtons = {
-            sinhButton, coshButton, tanhButton, asinhButton, acoshButton,
-            atanhButton, lnButton, log2Button, logbButton, factorialButton,
-            permutationButton, combinationButton, matrixButton, complexButton,
-            conversionButton, modButton, absButton, ceilButton, floorButton,
-            radDegToggleButton, graphButton
+                sinhButton, coshButton, tanhButton, asinhButton, acoshButton,
+                atanhButton, lnButton, log2Button, logbButton, factorialButton,
+                permutationButton, combinationButton, matrixButton, complexButton,
+                conversionButton, modButton, absButton, ceilButton, floorButton,
+                radDegToggleButton, graphButton
         };
 
         for (JButton btn : advButtons) {
@@ -439,11 +442,13 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         historyFrame.getContentPane().setBackground(background);
-        historyTextArea.setBackground(darkMode ? new Color(50,50,50) : Color.WHITE);
+        historyTextArea.setBackground(darkMode ? new Color(50, 50, 50) : Color.WHITE);
         historyTextArea.setForeground(foreground);
         historyScrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(darkMode ? new Color(50,50,50) : new Color(170, 170, 180), 1),
+                BorderFactory.createLineBorder(darkMode ? new Color(50, 50, 50) : new Color(170, 170, 180), 1),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        historyScrollPane.setBackground(background);
+        historyScrollPane.getViewport().setBackground(darkMode ? new Color(50, 50, 50) : Color.WHITE);
 
         clearHistoryButton.setBackground(buttonBg);
         clearHistoryButton.setForeground(foreground);
@@ -455,25 +460,25 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     private Border createButtonBorder(Color baseColor, boolean darkMode) {
         Color shadowColor = darkMode
                 ? new Color(Math.max(baseColor.getRed() - 45, 0),
-                            Math.max(baseColor.getGreen() - 45, 0),
-                            Math.max(baseColor.getBlue() - 45, 0), 180)
+                        Math.max(baseColor.getGreen() - 45, 0),
+                        Math.max(baseColor.getBlue() - 45, 0), 180)
                 : new Color(Math.max(baseColor.getRed() - 65, 0),
-                            Math.max(baseColor.getGreen() - 65, 0),
-                            Math.max(baseColor.getBlue() - 65, 0), 160);
+                        Math.max(baseColor.getGreen() - 65, 0),
+                        Math.max(baseColor.getBlue() - 65, 0), 160);
 
         Color highlightColor = darkMode
                 ? new Color(Math.min(baseColor.getRed() + 35, 255),
-                            Math.min(baseColor.getGreen() + 35, 255),
-                            Math.min(baseColor.getBlue() + 35, 255))
+                        Math.min(baseColor.getGreen() + 35, 255),
+                        Math.min(baseColor.getBlue() + 35, 255))
                 : new Color(Math.min(baseColor.getRed() + 45, 255),
-                            Math.min(baseColor.getGreen() + 45, 255),
-                            Math.min(baseColor.getBlue() + 45, 255));
+                        Math.min(baseColor.getGreen() + 45, 255),
+                        Math.min(baseColor.getBlue() + 45, 255));
 
         return BorderFactory.createCompoundBorder(
                 new SoftBevelBorder(BevelBorder.RAISED),
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(highlightColor, 1),
-                        BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+                        BorderFactory.createEmptyBorder(5, 2, 5, 2)));
     }
 
     public static void main(String[] args) {
@@ -553,10 +558,11 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         // Basic scientific: sin, cos, tan, log, sqrt
         if (e.getSource() == sinButton || e.getSource() == cosButton ||
-            e.getSource() == tanButton || e.getSource() == logButton ||
-            e.getSource() == sqrtButton) {
+                e.getSource() == tanButton || e.getSource() == logButton ||
+                e.getSource() == sqrtButton) {
 
-            if (currentExpression.isEmpty()) return;
+            if (currentExpression.isEmpty())
+                return;
             try {
                 double value = Double.parseDouble(currentExpression);
                 double tempResult = 0;
@@ -604,8 +610,8 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         // Operators
         if (e.getSource() == addButton || e.getSource() == subtractButton ||
-            e.getSource() == multiplyButton || e.getSource() == divideButton ||
-            e.getSource() == powerButton) {
+                e.getSource() == multiplyButton || e.getSource() == divideButton ||
+                e.getSource() == powerButton) {
 
             if (operationClicked) {
                 appendStyled("\nError: Multiple operators ignored\n", errorStyle);
@@ -773,7 +779,6 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
     }
 
-
     private void clearTextArea() {
         setTextContent(textArea, "");
     }
@@ -896,25 +901,33 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+    }
+
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     public static class MathEngine {
         public static long factorial(int n) {
-            if (n < 0) throw new IllegalArgumentException("Negative number");
+            if (n < 0)
+                throw new IllegalArgumentException("Negative number");
             long result = 1;
             for (int i = 2; i <= n; i++) {
                 result *= i;
             }
             return result;
         }
+
         public static long permutation(int n, int r) {
-            if (r > n || n < 0 || r < 0) throw new IllegalArgumentException("Invalid values");
+            if (r > n || n < 0 || r < 0)
+                throw new IllegalArgumentException("Invalid values");
             return factorial(n) / factorial(n - r);
         }
+
         public static long combination(int n, int r) {
-            if (r > n || n < 0 || r < 0) throw new IllegalArgumentException("Invalid values");
+            if (r > n || n < 0 || r < 0)
+                throw new IllegalArgumentException("Invalid values");
             return factorial(n) / (factorial(r) * factorial(n - r));
         }
     }
@@ -927,6 +940,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     res[i][j] = A[i][j] + B[i][j];
             return res;
         }
+
         public static double[][] subtract(double[][] A, double[][] B) {
             double[][] res = new double[2][2];
             for (int i = 0; i < 2; i++)
@@ -934,6 +948,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     res[i][j] = A[i][j] - B[i][j];
             return res;
         }
+
         public static double[][] multiply(double[][] A, double[][] B) {
             double[][] res = new double[2][2];
             for (int i = 0; i < 2; i++)
@@ -941,12 +956,15 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     res[i][j] = A[i][0] * B[0][j] + A[i][1] * B[1][j];
             return res;
         }
+
         public static double determinant(double[][] A) {
             return A[0][0] * A[1][1] - A[0][1] * A[1][0];
         }
+
         public static double[][] inverse(double[][] A) {
             double det = determinant(A);
-            if (det == 0) throw new ArithmeticException("Singular matrix");
+            if (det == 0)
+                throw new ArithmeticException("Singular matrix");
             double[][] inv = new double[2][2];
             inv[0][0] = A[1][1] / det;
             inv[0][1] = -A[0][1] / det;
@@ -954,6 +972,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             inv[1][1] = A[0][0] / det;
             return inv;
         }
+
         public static String toString(double[][] M) {
             return String.format("[%.2f  %.2f]\n[%.2f  %.2f]", M[0][0], M[0][1], M[1][0], M[1][1]);
         }
@@ -962,10 +981,12 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     public static class Complex {
         double re;
         double im;
+
         public Complex(double re, double im) {
             this.re = re;
             this.im = im;
         }
+
         public Complex(String s) {
             s = s.replace(" ", "");
             String[] parts = s.split("\\+");
@@ -986,22 +1007,26 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 im = s.contains("i") ? 1 : 0;
             }
         }
+
         public Complex add(Complex c) {
             return new Complex(this.re + c.re, this.im + c.im);
         }
+
         public Complex subtract(Complex c) {
             return new Complex(this.re - c.re, this.im - c.im);
         }
+
         public Complex multiply(Complex c) {
             return new Complex(this.re * c.re - this.im * c.im, this.re * c.im + this.im * c.re);
         }
+
         public Complex divide(Complex c) {
             double denom = c.re * c.re + c.im * c.im;
             return new Complex(
-                (this.re * c.re + this.im * c.im) / denom,
-                (this.im * c.re - this.re * c.im) / denom
-            );
+                    (this.re * c.re + this.im * c.im) / denom,
+                    (this.im * c.re - this.re * c.im) / denom);
         }
+
         @Override
         public String toString() {
             return String.format("%.2f %c %.2fi", re, (im >= 0 ? '+' : '-'), Math.abs(im));
@@ -1022,19 +1047,21 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
     class GraphPanel extends JPanel {
         boolean darkModeGraph;
+
         public GraphPanel(boolean dark) {
             darkModeGraph = dark;
         }
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D)g;
+            Graphics2D g2 = (Graphics2D) g;
             int w = getWidth();
             int h = getHeight();
 
             // Background
             if (darkModeGraph) {
-                g2.setColor(new Color(50,50,50));
+                g2.setColor(new Color(50, 50, 50));
             } else {
                 g2.setColor(Color.WHITE);
             }
@@ -1043,23 +1070,23 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             // Axes
             g2.setStroke(new BasicStroke(2f));
             g2.setColor(darkModeGraph ? Color.LIGHT_GRAY : Color.BLACK);
-            int midY = h/2;
+            int midY = h / 2;
             g2.drawLine(0, midY, w, midY); // x-axis
-            g2.drawLine(w/2, 0, w/2, h);   // y-axis
+            g2.drawLine(w / 2, 0, w / 2, h); // y-axis
 
             // Simple sine wave
             g2.setColor(Color.RED);
             Path2D.Double path = new Path2D.Double();
             double scaleX = 0.04; // how “wide” the wave is
-            double scaleY = 50;   // amplitude
-            int centerX = w/2;
-            int centerY = h/2;
+            double scaleY = 50; // amplitude
+            int centerX = w / 2;
+            int centerY = h / 2;
 
             // Start path
             path.moveTo(0, centerY);
-            for (int x=0; x<w; x++) {
+            for (int x = 0; x < w; x++) {
                 double angle = (x - centerX) * scaleX;
-                double yVal = Math.sin(angle)*scaleY;
+                double yVal = Math.sin(angle) * scaleY;
                 path.lineTo(x, centerY - yVal);
             }
             g2.draw(path);
