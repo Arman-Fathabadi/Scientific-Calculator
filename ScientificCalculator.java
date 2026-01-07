@@ -759,22 +759,38 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         // Hyperbolic, etc.
-        // Convert Button (Decimal -> Hex)
+        // Convert Button (Decimal -> Hex/Bin)
         if (e.getSource() == conversionButton) {
             if (currentExpression.isEmpty())
                 return;
             try {
                 double val = Double.parseDouble(currentExpression);
                 long longVal = (long) val;
-                String hex = Long.toHexString(longVal).toUpperCase();
+
+                String[] options = { "Hex", "Binary" };
+                int choice = JOptionPane.showOptionDialog(frame, "Select conversion type:", "Convert",
+                        JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+
+                String resultStr = "";
+                String prefix = "";
+
+                if (choice == 0) { // Hex
+                    resultStr = Long.toHexString(longVal).toUpperCase();
+                    prefix = "Hex";
+                } else if (choice == 1) { // Binary
+                    resultStr = Long.toBinaryString(longVal);
+                    prefix = "Bin";
+                } else {
+                    return; // Cancelled
+                }
 
                 clearTextArea();
-                String output = "Hex(" + longVal + ")=" + hex;
+                String output = prefix + "(" + longVal + ")=" + resultStr;
                 appendStyled(output + "\n", resultStyle);
 
                 lastFullExpression = output;
-                lastExpression = hex;
-                currentExpression = ""; // Reset current expression as it's now a string (hex)
+                lastExpression = resultStr;
+                currentExpression = "";
                 equalsClicked = true;
                 operationClicked = false;
             } catch (Exception ex) {
