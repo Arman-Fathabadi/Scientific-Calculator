@@ -759,7 +759,29 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         // Hyperbolic, etc.
-        // ... (rest of actionPerformed method is the same)
+        // Convert Button (Decimal -> Hex)
+        if (e.getSource() == conversionButton) {
+            if (currentExpression.isEmpty())
+                return;
+            try {
+                double val = Double.parseDouble(currentExpression);
+                long longVal = (long) val;
+                String hex = Long.toHexString(longVal).toUpperCase();
+
+                clearTextArea();
+                String output = "Hex(" + longVal + ")=" + hex;
+                appendStyled(output + "\n", resultStyle);
+
+                lastFullExpression = output;
+                lastExpression = hex;
+                currentExpression = ""; // Reset current expression as it's now a string (hex)
+                equalsClicked = true;
+                operationClicked = false;
+            } catch (Exception ex) {
+                appendStyled("\nError: Invalid input\n", errorStyle);
+            }
+            return;
+        }
 
         // Clear History
         if (e.getSource() == clearHistoryButton) {
