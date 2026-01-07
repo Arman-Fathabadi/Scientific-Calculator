@@ -155,12 +155,14 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         themeToggleButton.addActionListener(this);
+        themeToggleButton.setFont(fo);
         themeToggleButton.setFocusable(false);
         themeToggleButton.setBorderPainted(true);
         themeToggleButton.setFocusPainted(false);
         addButtonHoverEffect(themeToggleButton);
 
         historyButton.addActionListener(this);
+        historyButton.setFont(fo);
         historyButton.setFocusable(false);
         historyButton.setBorderPainted(true);
         historyButton.setFocusPainted(false);
@@ -474,15 +476,10 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     BorderFactory.createEmptyBorder(5, 5, 5, 5));
         }
 
-        Color highlightColor = new Color(Math.min(baseColor.getRed() + 45, 255),
-                Math.min(baseColor.getGreen() + 45, 255),
-                Math.min(baseColor.getBlue() + 45, 255));
-
+        // Flat border for Light Mode
         return BorderFactory.createCompoundBorder(
-                new SoftBevelBorder(BevelBorder.RAISED),
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(highlightColor, 1),
-                        BorderFactory.createEmptyBorder(5, 2, 5, 2)));
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5));
     }
 
     public static void main(String[] args) {
