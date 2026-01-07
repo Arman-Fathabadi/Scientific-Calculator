@@ -767,7 +767,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 double val = Double.parseDouble(currentExpression);
                 long longVal = (long) val;
 
-                String[] options = { "Hex", "Binary" };
+                String[] options = { "Hex", "Binary", "Octal" };
                 int choice = JOptionPane.showOptionDialog(frame, "Select conversion type:", "Convert",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 
@@ -780,6 +780,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 } else if (choice == 1) { // Binary
                     resultStr = Long.toBinaryString(longVal);
                     prefix = "Bin";
+                } else if (choice == 2) { // Octal
+                    resultStr = Long.toOctalString(longVal);
+                    prefix = "Oct";
                 } else {
                     return; // Cancelled
                 }
