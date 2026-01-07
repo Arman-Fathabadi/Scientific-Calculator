@@ -93,6 +93,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         frame.add(headerPanel);
 
         textArea = new JTextPane();
+        textArea.setFocusable(false);
         textArea.setFont(fo);
         textArea.setEditable(false);
         scrollPane = new JScrollPane(textArea);
@@ -257,6 +258,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         historyFrame.setSize(400, 600);
         historyFrame.setLayout(new BorderLayout());
         historyTextArea = new JTextPane();
+        historyTextArea.setFocusable(false);
         historyTextArea.setFont(fo);
         historyTextArea.setEditable(false);
         historyScrollPane = new JScrollPane(historyTextArea);
