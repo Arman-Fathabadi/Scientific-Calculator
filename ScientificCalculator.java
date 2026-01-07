@@ -923,6 +923,12 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         if (shiftDown) {
             switch (keyCode) {
+                case KeyEvent.VK_1:
+                    factorialButton.doClick();
+                    return;
+                case KeyEvent.VK_5:
+                    modButton.doClick();
+                    return;
                 case KeyEvent.VK_8:
                     multiplyButton.doClick();
                     return;
