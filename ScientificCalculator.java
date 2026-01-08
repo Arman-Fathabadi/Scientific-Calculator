@@ -865,6 +865,12 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             return;
         }
 
+        // Graph Button
+        if (e.getSource() == graphButton) {
+            new GraphFrame(isDarkMode);
+            return;
+        }
+
         frame.requestFocus();
     }
 
@@ -1137,61 +1143,295 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
     }
 
+    // Simple Expression Parser for Graphing
+    static class FunctionParser {
+        public static double eval(String expression, double x) {
+            try {
+                return new Object() {
+                    int pos = -1, ch;
+
+                    void nextChar() {
+                        ch = (++pos < expression.length()) ? expression.charAt(pos) : -1;
+                    }
+
+                    boolean eat(int charToEat) {
+                        while (ch == ' ')
+                            nextChar();
+                        if (ch == charToEat) {
+                            nextChar();
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    double parse() {
+                        nextChar();
+                        double xVal = parseExpression();
+                        if (pos < expression.length())
+                            throw new RuntimeException("Unexpected: " + (char) ch);
+                        return xVal;
+                    }
+
+                    double parseExpression() {
+                        double xVal = parseTerm();
+                        for (;;) {
+                            if (eat('+'))
+                                xVal += parseTerm(); // addition
+                            else if (eat('-'))
+                                xVal -= parseTerm(); // subtraction
+                            else
+                                return xVal;
+                        }
+                    }
+
+                    double parseTerm() {
+                        double xVal = parseFactor();
+                        for (;;) {
+                            if (eat('*'))
+                                xVal *= parseFactor(); // multiplication
+                            else if (eat('/'))
+                                xVal /= parseFactor(); // division
+                            else if (ch == '(' || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '.')
+                                xVal *= parseFactor(); // implicit multiplication
+                            else
+                                return xVal;
+                        }
+                    }
+
+                    double parseFactor() {
+                        if (eat('+'))
+                            return parseFactor(); // unary plus
+                        if (eat('-'))
+                            return -parseFactor(); // unary minus
+
+                        double xVal;
+                        int startPos = this.pos;
+                        if (eat('(')) { // parentheses
+                            xVal = parseExpression();
+                            eat(')');
+                        } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
+                            while ((ch >= '0' && ch <= '9') || ch == '.')
+                                nextChar();
+                            xVal = Double.parseDouble(expression.substring(startPos, this.pos));
+                        } else if (ch == 'x') { // variable x
+                            nextChar();
+                            xVal = x;
+                        } else if (ch >= 'a' && ch <= 'z') { // functions
+                            while (ch >= 'a' && ch <= 'z')
+                                nextChar();
+                            String func = expression.substring(startPos, this.pos);
+                            if (eat('(')) {
+                                xVal = parseExpression();
+                                eat(')');
+                            } else {
+                                xVal = parseFactor();
+                            }
+                            if (func.equals("sin"))
+                                xVal = Math.sin(xVal);
+                            else if (func.equals("cos"))
+                                xVal = Math.cos(xVal);
+                            else if (func.equals("tan"))
+                                xVal = Math.tan(xVal);
+                            else if (func.equals("sqrt"))
+                                xVal = Math.sqrt(xVal);
+                            else if (func.equals("log"))
+                                xVal = Math.log10(xVal);
+                            else if (func.equals("ln"))
+                                xVal = Math.log(xVal);
+                            else if (func.equals("abs"))
+                                xVal = Math.abs(xVal);
+                            else
+                                throw new RuntimeException("Unknown function: " + func);
+                        } else {
+                            throw new RuntimeException("Unexpected: " + (char) ch);
+                        }
+
+                        if (eat('^'))
+                            xVal = Math.pow(xVal, parseFactor()); // exponentiation
+
+                        return xVal;
+                    }
+                }.parse();
+            } catch (Exception e) {
+                return Double.NaN;
+            }
+        }
+    }
+
     // Minimal Graph Frame to show a small sine wave
     class GraphFrame extends JFrame {
         public GraphFrame(boolean dark) {
             super("Simple Graph");
-            setSize(600, 400);
+            setSize(600, 500);
             setLocationRelativeTo(frame);
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            add(new GraphPanel(dark));
+
+            GraphPanel graphPanel = new GraphPanel(dark);
+            add(graphPanel, BorderLayout.CENTER);
+
+            // Control Panel
+            JPanel controlPanel = new JPanel();
+            controlPanel.setBackground(dark ? new Color(30, 30, 35) : Color.WHITE);
+
+            JTextField inputField = new JTextField("sin(x)", 20);
+            JButton plotButton = new JButton("Plot");
+
+            controlPanel.add(new JLabel("y = "));
+            controlPanel.add(inputField);
+            controlPanel.add(plotButton);
+
+            add(controlPanel, BorderLayout.SOUTH);
+
+            plotButton.addActionListener(e -> {
+                graphPanel.setFunction(inputField.getText());
+                graphPanel.repaint();
+            });
+
             setVisible(true);
         }
     }
 
     class GraphPanel extends JPanel {
         boolean darkModeGraph;
+        double minX = -10;
+        double maxX = 10;
+        double minY = -6;
+        double maxY = 6;
+        String currentFunction = "sin(x)";
 
         public GraphPanel(boolean dark) {
             darkModeGraph = dark;
+        }
+
+        public void setFunction(String func) {
+            this.currentFunction = func;
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
             int w = getWidth();
             int h = getHeight();
 
             // Background
-            if (darkModeGraph) {
-                g2.setColor(new Color(50, 50, 50));
-            } else {
-                g2.setColor(Color.WHITE);
-            }
+            g2.setColor(darkModeGraph ? new Color(30, 30, 35) : Color.WHITE);
             g2.fillRect(0, 0, w, h);
 
-            // Axes
-            g2.setStroke(new BasicStroke(2f));
-            g2.setColor(darkModeGraph ? Color.LIGHT_GRAY : Color.BLACK);
-            int midY = h / 2;
-            g2.drawLine(0, midY, w, midY); // x-axis
-            g2.drawLine(w / 2, 0, w / 2, h); // y-axis
+            // Calculate Scale
+            double scaleX = w / (maxX - minX);
+            double scaleY = h / (maxY - minY);
 
-            // Simple sine wave
-            g2.setColor(Color.RED);
+            // Grid Styling
+            Color majorGridColor = darkModeGraph ? new Color(70, 70, 70) : new Color(220, 220, 220);
+            Color axisColor = darkModeGraph ? Color.WHITE : Color.BLACK;
+            Color textColor = darkModeGraph ? Color.LIGHT_GRAY : Color.GRAY;
+
+            // Draw Grid and Labels
+            g2.setFont(new Font("Arial", Font.PLAIN, 10));
+            FontMetrics fm = g2.getFontMetrics();
+
+            // Vertical Grid Lines (X steps)
+            for (int x = (int) Math.ceil(minX); x <= (int) Math.floor(maxX); x++) {
+                int xPixel = (int) ((x - minX) * scaleX);
+
+                // Grid Line
+                if (x == 0) {
+                    g2.setColor(axisColor);
+                    g2.setStroke(new BasicStroke(2f));
+                } else {
+                    g2.setColor(majorGridColor);
+                    g2.setStroke(new BasicStroke(1f));
+                }
+                g2.drawLine(xPixel, 0, xPixel, h);
+
+                // Label
+                if (x != 0) {
+                    g2.setColor(textColor);
+                    String label = String.valueOf(x);
+                    int labelWidth = fm.stringWidth(label);
+                    // Position label near x-axis (axis Y is at 0)
+                    // yPixel = (maxY - yVal) * scaleY. For y=0, yPixel = maxY * scaleY.
+                    int yPos = (int) (maxY * scaleY) + 15;
+                    // Clamp to screen
+                    if (yPos > h - 5)
+                        yPos = h - 5;
+                    if (yPos < 15)
+                        yPos = 15;
+                    g2.drawString(label, xPixel - labelWidth / 2, yPos);
+                }
+            }
+
+            // Horizontal Grid Lines (Y steps)
+            for (int y = (int) Math.ceil(minY); y <= (int) Math.floor(maxY); y++) {
+                int yPixel = (int) ((maxY - y) * scaleY);
+
+                // Grid Line
+                if (y == 0) {
+                    g2.setColor(axisColor);
+                    g2.setStroke(new BasicStroke(2f));
+                } else {
+                    g2.setColor(majorGridColor);
+                    g2.setStroke(new BasicStroke(1f));
+                }
+                g2.drawLine(0, yPixel, w, yPixel);
+
+                // Label
+                if (y != 0) {
+                    g2.setColor(textColor);
+                    String label = String.valueOf(y);
+                    int labelWidth = fm.stringWidth(label);
+                    int zeroXPixel = (int) ((0 - minX) * scaleX);
+                    // Position label near y-axis (axis X is at 0)
+                    int xPos = zeroXPixel - labelWidth - 5;
+                    // Clamp
+                    if (xPos < 5)
+                        xPos = 5;
+                    if (xPos > w - labelWidth - 5)
+                        xPos = w - labelWidth - 5;
+                    g2.drawString(label, xPos, yPixel + 4);
+                }
+            }
+
+            // Plot Function: y = sin(x) for simplicity
+            // In a real scientific calculator, this should parse 'currentExpression' with x
+            g2.setColor(new Color(255, 60, 60)); // Desmos Red
+            g2.setStroke(new BasicStroke(2.5f));
+
             Path2D.Double path = new Path2D.Double();
-            double scaleX = 0.04; // how “wide” the wave is
-            double scaleY = 50; // amplitude
-            int centerX = w / 2;
-            int centerY = h / 2;
+            boolean first = true;
 
-            // Start path
-            path.moveTo(0, centerY);
-            for (int x = 0; x < w; x++) {
-                double angle = (x - centerX) * scaleX;
-                double yVal = Math.sin(angle) * scaleY;
-                path.lineTo(x, centerY - yVal);
+            // Step size in pixels
+            for (int i = 0; i <= w; i++) {
+                // Convert pixel X to logical X
+                double logicalX = minX + (i / scaleX);
+                double logicalY = FunctionParser.eval(currentFunction, logicalX);
+
+                // Convert logical Y to pixel Y
+                // pixelY = (maxY - logicalY) * scaleY
+                double pixelY = (maxY - logicalY) * scaleY;
+
+                // Avoid drawing lines to infinity if value is NaN or Infinite
+                if (Double.isNaN(pixelY) || Double.isInfinite(pixelY)) {
+                    first = true; // reset path
+                    continue;
+                }
+
+                // Clamp for drawing performance (optional, but good practice)
+                if (pixelY < -500 || pixelY > h + 500) {
+                    if (!first)
+                        path.lineTo(i, pixelY); // Draw to offscreen point to maintain line direction
+                    continue;
+                }
+
+                if (first) {
+                    path.moveTo(i, pixelY);
+                    first = false;
+                } else {
+                    path.lineTo(i, pixelY);
+                }
             }
             g2.draw(path);
         }
