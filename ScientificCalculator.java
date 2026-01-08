@@ -1287,6 +1287,31 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 graphPanel.repaint();
             });
 
+            // Slider for X Navigation
+            JSlider xSlider = new JSlider(JSlider.HORIZONTAL, -100, 100, 0);
+            xSlider.setMajorTickSpacing(20);
+            xSlider.setPaintTicks(true);
+            xSlider.setBackground(dark ? new Color(30, 30, 35) : Color.WHITE);
+            // The method setCenterX will be added to GraphPanel in the next step
+            // We use a temporary lambda that will be valid once setCenterX exists
+            xSlider.addChangeListener(ev -> {
+                double val = xSlider.getValue();
+                graphPanel.setCenterX(val);
+            });
+            add(xSlider, BorderLayout.NORTH);
+
+            // Slider for Y Navigation
+            JSlider ySlider = new JSlider(JSlider.VERTICAL, -100, 100, 0);
+            ySlider.setMajorTickSpacing(20);
+            ySlider.setPaintTicks(true);
+            ySlider.setBackground(dark ? new Color(30, 30, 35) : Color.WHITE);
+            // The method setCenterY will be added to GraphPanel in the next step
+            ySlider.addChangeListener(ev -> {
+                double val = ySlider.getValue();
+                graphPanel.setCenterY(val);
+            });
+            add(ySlider, BorderLayout.EAST);
+
             setVisible(true);
         }
     }
@@ -1362,6 +1387,20 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         public void setFunction(String func) {
             this.currentFunction = func;
+        }
+
+        public void setCenterX(double center) {
+            double width = maxX - minX;
+            minX = center - width / 2.0;
+            maxX = center + width / 2.0;
+            repaint();
+        }
+
+        public void setCenterY(double center) {
+            double height = maxY - minY;
+            minY = center - height / 2.0;
+            maxY = center + height / 2.0;
+            repaint();
         }
 
         @Override
