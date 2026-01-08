@@ -1301,6 +1301,63 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         public GraphPanel(boolean dark) {
             darkModeGraph = dark;
+
+            // Pan & Zoom Interaction
+            MouseAdapter inputHandler = new MouseAdapter() {
+                private Point lastDragPoint;
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    lastDragPoint = e.getPoint();
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    if (lastDragPoint == null)
+                        return;
+                    Point current = e.getPoint();
+                    int dx = current.x - lastDragPoint.x;
+                    int dy = current.y - lastDragPoint.y;
+
+                    double scaleX = getWidth() / (maxX - minX);
+                    double scaleY = getHeight() / (maxY - minY);
+
+                    double logicalDx = dx / scaleX;
+                    double logicalDy = dy / scaleY;
+
+                    minX -= logicalDx;
+                    maxX -= logicalDx;
+                    minY += logicalDy; // Y inverted
+                    maxY += logicalDy;
+
+                    lastDragPoint = current;
+                    repaint();
+                }
+
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    double factor = (e.getWheelRotation() < 0) ? 0.9 : 1.1;
+
+                    double width = maxX - minX;
+                    double height = maxY - minY;
+                    double newWidth = width * factor;
+                    double newHeight = height * factor;
+
+                    double centerX = (minX + maxX) / 2;
+                    double centerY = (minY + maxY) / 2;
+
+                    minX = centerX - newWidth / 2;
+                    maxX = centerX + newWidth / 2;
+                    minY = centerY - newHeight / 2;
+                    maxY = centerY + newHeight / 2;
+
+                    repaint();
+                }
+            };
+
+            addMouseListener(inputHandler);
+            addMouseMotionListener(inputHandler);
+            addMouseWheelListener(inputHandler);
         }
 
         public void setFunction(String func) {
