@@ -701,6 +701,18 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     case '^':
                         temp = BigDecimal.valueOf(Math.pow(num1.doubleValue(), num2.doubleValue()));
                         break;
+                    case 'L': // Log Base
+                        temp = BigDecimal.valueOf(Math.log(num1.doubleValue()) / Math.log(num2.doubleValue()));
+                        break;
+                    case 'P': // nPr
+                        temp = BigDecimal.valueOf(perm(num1.longValue(), num2.longValue()));
+                        break;
+                    case 'C': // nCr
+                        temp = BigDecimal.valueOf(comb(num1.longValue(), num2.longValue()));
+                        break;
+                    case '%': // Modulo
+                        temp = num1.remainder(num2, mc);
+                        break;
                 }
             } catch (Exception ex) {
                 appendStyled("\nError: Invalid arithmetic\n", errorStyle);
@@ -857,10 +869,11 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             return;
         }
 
-        // Clear History
-        if (e.getSource() == clearHistoryButton)
+        // Advanced Functions
+        handleAdvancedMath(e);
 
-        {
+        // Clear History
+        if (e.getSource() == clearHistoryButton) {
             setTextContent(historyTextArea, "");
             return;
         }
@@ -871,7 +884,117 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             return;
         }
 
+        // Rad/Deg Toggle
+        if (e.getSource() == radDegToggleButton) {
+            isDegreeMode = !isDegreeMode;
+            radDegToggleButton.setText(isDegreeMode ? "Deg" : "Rad");
+            return;
+        }
+
         frame.requestFocus();
+    }
+
+    // Helper method to keep actionPerformed clean
+    private void handleAdvancedMath(ActionEvent e) {
+        Object src = e.getSource();
+
+        try {
+            // Unary Operations (Act immediately on current input)
+            if (src == sinhButton || src == coshButton || src == tanhButton ||
+                    src == asinhButton || src == acoshButton || src == atanhButton ||
+                    src == lnButton || src == log2Button ||
+                    src == factorialButton ||
+                    src == ceilButton || src == floorButton ||
+                    src == absButton || // Added absButton
+                    src == matrixButton || src == complexButton) {
+
+                if (currentExpression.isEmpty())
+                    return;
+                BigDecimal val = new BigDecimal(currentExpression, mc);
+                double d = val.doubleValue();
+                double res = 0;
+                String opName = "";
+
+                if (src == sinhButton) {
+                    res = Math.sinh(d);
+                    opName = "sinh";
+                } else if (src == coshButton) {
+                    res = Math.cosh(d);
+                    opName = "cosh";
+                } else if (src == tanhButton) {
+                    res = Math.tanh(d);
+                    opName = "tanh";
+                } else if (src == asinhButton) {
+                    res = Math.log(d + Math.sqrt(d * d + 1));
+                    opName = "asinh";
+                } else if (src == acoshButton) {
+                    res = Math.log(d + Math.sqrt(d * d - 1));
+                    opName = "acosh";
+                } else if (src == atanhButton) {
+                    res = 0.5 * Math.log((1 + d) / (1 - d));
+                    opName = "atanh";
+                } else if (src == lnButton) {
+                    res = Math.log(d);
+                    opName = "ln";
+                } else if (src == log2Button) {
+                    res = Math.log(d) / Math.log(2);
+                    opName = "log2";
+                } else if (src == ceilButton) {
+                    res = Math.ceil(d);
+                    opName = "ceil";
+                } else if (src == floorButton) {
+                    res = Math.floor(d);
+                    opName = "floor";
+                } else if (src == absButton) {
+                    res = Math.abs(d);
+                    opName = "abs";
+                } // Added abs logic
+                else if (src == factorialButton) {
+                    if (d < 0 || d != Math.floor(d))
+                        throw new ArithmeticException("Invalid factorial input");
+                    res = 1;
+                    for (int i = 2; i <= (int) d; i++)
+                        res *= i;
+                    opName = "fact";
+                } else if (src == matrixButton || src == complexButton) {
+                    JOptionPane.showMessageDialog(frame, "Feature coming soon!", "Info",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                currentExpression = formatResult(res);
+                clearTextArea();
+                appendStyled(opName + "(" + formatResult(d) + ") = " + currentExpression + "\n", resultStyle);
+                num1 = BigDecimal.valueOf(res);
+                return;
+            }
+
+            // Binary Operations (Set operation and wait for second operand)
+            if (src == logbButton || src == permutationButton || src == combinationButton || src == modButton) { // Added
+                                                                                                                 // modButton
+                if (currentExpression.isEmpty())
+                    return;
+                num1 = new BigDecimal(currentExpression, mc);
+                currentExpression = "";
+                clearTextArea();
+
+                if (src == logbButton)
+                    operation = 'L'; // Log base
+                else if (src == permutationButton)
+                    operation = 'P'; // nPr
+                else if (src == combinationButton)
+                    operation = 'C'; // nCr
+                else if (src == modButton)
+                    operation = '%'; // Modulo
+
+                operationClicked = true;
+                equalsClicked = false;
+                return;
+            }
+
+        } catch (Exception ex) {
+            appendStyled("\nError: " + ex.getMessage() + "\n", errorStyle);
+        }
     }
 
     private String formatResult(double value) {
@@ -1040,6 +1163,28 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 throw new IllegalArgumentException("Invalid values");
             return factorial(n) / (factorial(r) * factorial(n - r));
         }
+    }
+
+    private double perm(long n, long r) {
+        if (r < 0 || r > n)
+            return 0;
+        double res = 1;
+        for (long i = 0; i < r; i++) {
+            res *= (n - i);
+        }
+        return res;
+    }
+
+    private double comb(long n, long r) {
+        if (r < 0 || r > n)
+            return 0;
+        if (r > n / 2)
+            r = n - r; // Symmetry
+        double res = 1;
+        for (long i = 1; i <= r; i++) {
+            res = res * (n - i + 1) / i;
+        }
+        return res;
     }
 
     public static class MatrixOps {
