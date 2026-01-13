@@ -1562,10 +1562,15 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 }
             });
             JButton plotButton = new JButton("Plot");
+            JButton zoomInButton = new JButton("+");
+            JButton zoomOutButton = new JButton("-");
 
             controlPanel.add(new JLabel("y = "));
             controlPanel.add(inputField);
             controlPanel.add(plotButton);
+            controlPanel.add(new JLabel("  Zoom:"));
+            controlPanel.add(zoomInButton);
+            controlPanel.add(zoomOutButton);
 
             add(controlPanel, BorderLayout.SOUTH);
 
@@ -1573,6 +1578,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 graphPanel.setFunction(inputField.getText());
                 graphPanel.repaint();
             });
+
+            zoomInButton.addActionListener(e -> graphPanel.zoomIn());
+            zoomOutButton.addActionListener(e -> graphPanel.zoomOut());
 
             // Slider for X Navigation
             JSlider xSlider = new JSlider(JSlider.HORIZONTAL, -100, 100, 0);
@@ -1649,27 +1657,39 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 @Override
                 public void mouseWheelMoved(MouseWheelEvent e) {
                     double factor = (e.getWheelRotation() < 0) ? 0.9 : 1.1;
-
-                    double width = maxX - minX;
-                    double height = maxY - minY;
-                    double newWidth = width * factor;
-                    double newHeight = height * factor;
-
-                    double centerX = (minX + maxX) / 2;
-                    double centerY = (minY + maxY) / 2;
-
-                    minX = centerX - newWidth / 2;
-                    maxX = centerX + newWidth / 2;
-                    minY = centerY - newHeight / 2;
-                    maxY = centerY + newHeight / 2;
-
-                    repaint();
+                    zoom(factor);
                 }
             };
 
             addMouseListener(inputHandler);
             addMouseMotionListener(inputHandler);
             addMouseWheelListener(inputHandler);
+        }
+
+        // Zoom helper: factor < 1 zooms IN, factor > 1 zooms OUT
+        public void zoom(double factor) {
+            double width = maxX - minX;
+            double height = maxY - minY;
+            double newWidth = width * factor;
+            double newHeight = height * factor;
+
+            double centerX = (minX + maxX) / 2;
+            double centerY = (minY + maxY) / 2;
+
+            minX = centerX - newWidth / 2;
+            maxX = centerX + newWidth / 2;
+            minY = centerY - newHeight / 2;
+            maxY = centerY + newHeight / 2;
+
+            repaint();
+        }
+
+        public void zoomIn() {
+            zoom(0.8); // Zoom in by 20%
+        }
+
+        public void zoomOut() {
+            zoom(1.25); // Zoom out by 25%
         }
 
         public void setFunction(String func) {
@@ -1690,103 +1710,77 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             repaint();
         }
 
+        private double calculateNiceStep(double range) {
+            double targetStep = range / 10.0; // Aim for ~10 grid lines
+            double mag = Math.pow(10, Math.floor(Math.log10(targetStep)));
+            double base = targetStep / mag;
+            double step;
+            if (base < 2)
+                step = 1.0 * mag;
+            else if (base < 5)
+                step = 2.0 * mag;
+            else
+                step = 5.0 * mag;
+            return step;
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
             int w = getWidth();
             int h = getHeight();
 
-            // Background
-            g2.setColor(darkModeGraph ? new Color(30, 30, 35) : Color.WHITE);
+            double xRange = maxX - minX;
+            double yRange = maxY - minY;
+            double scaleX = w / xRange;
+            double scaleY = h / yRange;
+
+            // Colors (Desmos Style)
+            Color bgColor = darkModeGraph ? new Color(25, 25, 25) : Color.WHITE;
+            Color minorGridColor = darkModeGraph ? new Color(60, 60, 60) : new Color(235, 235, 235);
+            Color majorGridColor = darkModeGraph ? new Color(90, 90, 90) : new Color(200, 200, 200);
+            Color axisColor = darkModeGraph ? new Color(220, 220, 220) : new Color(50, 50, 50);
+            Color labelColor = darkModeGraph ? new Color(180, 180, 180) : new Color(80, 80, 80);
+
+            g2.setColor(bgColor);
             g2.fillRect(0, 0, w, h);
 
-            // Calculate Scale
-            double scaleX = w / (maxX - minX);
-            double scaleY = h / (maxY - minY);
+            // Dynamic Grids
+            double xStep = calculateNiceStep(xRange);
+            double yStep = calculateNiceStep(yRange);
 
-            // Grid Styling
-            Color majorGridColor = darkModeGraph ? new Color(70, 70, 70) : new Color(220, 220, 220);
-            Color axisColor = darkModeGraph ? Color.WHITE : Color.BLACK;
-            Color textColor = darkModeGraph ? Color.LIGHT_GRAY : Color.GRAY;
+            // Minor Grid (subdivided by 5)
+            g2.setStroke(new BasicStroke(0.5f));
+            g2.setColor(minorGridColor);
+            drawGridLines(g2, w, h, xStep / 5.0, yStep / 5.0, scaleX, scaleY, false, null);
 
-            // Draw Grid and Labels
-            g2.setFont(new Font("Arial", Font.PLAIN, 10));
-            FontMetrics fm = g2.getFontMetrics();
+            // Major Grid
+            g2.setStroke(new BasicStroke(1.0f));
+            g2.setColor(majorGridColor);
+            drawGridLines(g2, w, h, xStep, yStep, scaleX, scaleY, true, labelColor);
 
-            // Vertical Grid Lines (X steps)
-            for (int x = (int) Math.ceil(minX); x <= (int) Math.floor(maxX); x++) {
-                int xPixel = (int) ((x - minX) * scaleX);
-
-                // Grid Line
-                if (x == 0) {
-                    g2.setColor(axisColor);
-                    g2.setStroke(new BasicStroke(2f));
-                } else {
-                    g2.setColor(majorGridColor);
-                    g2.setStroke(new BasicStroke(1f));
-                }
-                g2.drawLine(xPixel, 0, xPixel, h);
-
-                // Label
-                if (x != 0) {
-                    g2.setColor(textColor);
-                    String label = String.valueOf(x);
-                    int labelWidth = fm.stringWidth(label);
-                    // Position label near x-axis (axis Y is at 0)
-                    // yPixel = (maxY - yVal) * scaleY. For y=0, yPixel = maxY * scaleY.
-                    int yPos = (int) (maxY * scaleY) + 15;
-                    // Clamp to screen
-                    if (yPos > h - 5)
-                        yPos = h - 5;
-                    if (yPos < 15)
-                        yPos = 15;
-                    g2.drawString(label, xPixel - labelWidth / 2, yPos);
-                }
-            }
-
-            // Horizontal Grid Lines (Y steps)
-            for (int y = (int) Math.ceil(minY); y <= (int) Math.floor(maxY); y++) {
-                int yPixel = (int) ((maxY - y) * scaleY);
-
-                // Grid Line
-                if (y == 0) {
-                    g2.setColor(axisColor);
-                    g2.setStroke(new BasicStroke(2f));
-                } else {
-                    g2.setColor(majorGridColor);
-                    g2.setStroke(new BasicStroke(1f));
-                }
-                g2.drawLine(0, yPixel, w, yPixel);
-
-                // Label
-                if (y != 0) {
-                    g2.setColor(textColor);
-                    String label = String.valueOf(y);
-                    int labelWidth = fm.stringWidth(label);
-                    int zeroXPixel = (int) ((0 - minX) * scaleX);
-                    // Position label near y-axis (axis X is at 0)
-                    int xPos = zeroXPixel - labelWidth - 5;
-                    // Clamp
-                    if (xPos < 5)
-                        xPos = 5;
-                    if (xPos > w - labelWidth - 5)
-                        xPos = w - labelWidth - 5;
-                    g2.drawString(label, xPos, yPixel + 4);
-                }
-            }
+            // Axes
+            g2.setColor(axisColor);
+            g2.setStroke(new BasicStroke(1.5f));
+            int yAxisX = (int) ((0 - minX) * scaleX);
+            int xAxisY = (int) ((maxY - 0) * scaleY);
+            if (minX <= 0 && maxX >= 0)
+                g2.drawLine(yAxisX, 0, yAxisX, h);
+            if (minY <= 0 && maxY >= 0)
+                g2.drawLine(0, xAxisY, w, xAxisY);
 
             // Plotting Logic
-            g2.setColor(new Color(255, 60, 60)); // Desmos Red
-            g2.setStroke(new BasicStroke(2.0f));
+            g2.setColor(new Color(220, 50, 40)); // Desmos Red
+            g2.setStroke(new BasicStroke(2.5f));
 
             String plotFunc = currentFunction.replace(" ", "");
             boolean hasEquals = plotFunc.contains("=");
             boolean isExplicit = !hasEquals;
 
-            // Optimization: "y=..." with no 'y' on RHS is effectively explicit
             if (hasEquals) {
                 String[] parts = plotFunc.split("=");
                 if (parts.length == 2 && parts[0].equals("y") && !parts[1].contains("y")) {
@@ -1797,74 +1791,131 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
             if (!isExplicit) {
                 // Implicit Graphing: Grid Scan
-                // Evaluate LHS - RHS = 0
-                String lhs, rhs;
-                if (hasEquals) {
-                    String[] parts = plotFunc.split("=");
-                    lhs = parts[0];
-                    rhs = (parts.length > 1) ? parts[1] : "0";
-                } else {
-                    lhs = plotFunc;
-                    rhs = "0";
-                }
-
-                int step = 4; // Grid resolution in pixels (Tradeoff: Speed vs Quality)
-                for (int px = 0; px < w; px += step) {
-                    for (int py = 0; py < h; py += step) {
-                        double x1 = minX + (px / scaleX);
-                        double y1 = maxY - (py / scaleY);
-                        double val1 = FunctionParser.eval(lhs, x1, y1) - FunctionParser.eval(rhs, x1, y1);
-
-                        // Check Right Neighbor
-                        if (px + step < w) {
-                            double x2 = minX + ((px + step) / scaleX);
-                            double val2 = FunctionParser.eval(lhs, x2, y1) - FunctionParser.eval(rhs, x2, y1);
-                            if (Math.signum(val1) != Math.signum(val2)) {
-                                g2.drawLine(px, py, px + step, py);
-                            }
-                        }
-
-                        // Check Bottom Neighbor
-                        if (py + step < h) {
-                            double y2 = maxY - ((py + step) / scaleY);
-                            double val2 = FunctionParser.eval(lhs, x1, y2) - FunctionParser.eval(rhs, x1, y2);
-                            if (Math.signum(val1) != Math.signum(val2)) {
-                                g2.drawLine(px, py, px, py + step);
-                            }
-                        }
-                    }
-                }
+                drawImplicit(g2, w, h, scaleX, scaleY, plotFunc, hasEquals);
             } else {
                 // Explicit Graphing: y = f(x)
-                Path2D.Double path = new Path2D.Double();
-                boolean first = true;
+                drawExplicit(g2, w, h, scaleX, scaleY, plotFunc);
+            }
+        }
 
-                for (int i = 0; i <= w; i++) {
-                    double logicalX = minX + (i / scaleX);
-                    double logicalY = FunctionParser.eval(plotFunc, logicalX);
+        private void drawGridLines(Graphics2D g2, int w, int h, double xStep, double yStep, double scaleX,
+                double scaleY, boolean drawLabels, Color labelColor) {
+            Font font = new Font("SansSerif", Font.BOLD, 12);
+            g2.setFont(font);
+            FontMetrics fm = g2.getFontMetrics();
 
-                    double pixelY = (maxY - logicalY) * scaleY;
+            // Vertical Lines
+            double startX = Math.ceil(minX / xStep) * xStep;
+            for (double x = startX; x <= maxX; x += xStep) {
+                int px = (int) ((x - minX) * scaleX);
+                g2.setColor(drawLabels ? g2.getColor() : g2.getColor()); // Re-set color just in case
+                g2.drawLine(px, 0, px, h);
 
-                    if (Double.isNaN(pixelY) || Double.isInfinite(pixelY)) {
-                        first = true;
-                        continue;
-                    }
+                if (drawLabels && Math.abs(x) > 1e-10) { // Don't label axis 0
+                    Color save = g2.getColor();
+                    g2.setColor(labelColor);
+                    String lbl = formatLabel(x);
+                    int lblW = fm.stringWidth(lbl);
+                    int xAxisY = (int) ((maxY - 0) * scaleY);
+                    int yPos = (xAxisY < 0) ? 15 : (xAxisY > h) ? h - 5 : xAxisY + 20;
+                    if (xAxisY >= 0 && xAxisY <= h)
+                        yPos = xAxisY + 15; // Standard pos
+                    g2.drawString(lbl, px - lblW / 2, yPos);
+                    g2.setColor(save);
+                }
+            }
 
-                    // Clamp for performance
-                    if (pixelY < -500 || pixelY > h + 500) {
-                        if (!first)
-                            path.lineTo(i, pixelY);
-                        continue;
-                    }
+            // Horizontal Lines
+            double startY = Math.ceil(minY / yStep) * yStep;
+            for (double y = startY; y <= maxY; y += yStep) {
+                int py = (int) ((maxY - y) * scaleY);
+                g2.drawLine(0, py, w, py);
 
-                    if (first) {
-                        path.moveTo(i, pixelY);
-                        first = false;
-                    } else {
+                if (drawLabels && Math.abs(y) > 1e-10) {
+                    Color save = g2.getColor();
+                    g2.setColor(labelColor);
+                    String lbl = formatLabel(y);
+                    int lblW = fm.stringWidth(lbl);
+                    int yAxisX = (int) ((0 - minX) * scaleX);
+                    int xPos = (yAxisX < 0) ? 5 : (yAxisX > w) ? w - lblW - 5 : yAxisX - lblW - 5;
+                    if (yAxisX >= 0 && yAxisX <= w)
+                        xPos = yAxisX - lblW - 5;
+                    g2.drawString(lbl, xPos, py + 5);
+                    g2.setColor(save);
+                }
+            }
+        }
+
+        private String formatLabel(double val) {
+            if (Math.abs(val) < 1e-10)
+                return "0";
+            if (Math.abs(val - Math.round(val)) < 1e-9)
+                return String.valueOf((int) Math.round(val));
+            return String.format("%.2f", val);
+        }
+
+        private void drawExplicit(Graphics2D g2, int w, int h, double scaleX, double scaleY, String func) {
+            Path2D.Double path = new Path2D.Double();
+            boolean first = true;
+            for (int i = 0; i <= w; i++) {
+                double logicalX = minX + (i / scaleX);
+                double logicalY = FunctionParser.eval(func, logicalX);
+                double pixelY = (maxY - logicalY) * scaleY;
+
+                if (Double.isNaN(pixelY) || Double.isInfinite(pixelY)) {
+                    first = true;
+                    continue;
+                }
+                if (pixelY < -h || pixelY > 2 * h) { // Optimization
+                    if (!first)
                         path.lineTo(i, pixelY);
+                    continue;
+                }
+                if (first) {
+                    path.moveTo(i, pixelY);
+                    first = false;
+                } else {
+                    path.lineTo(i, pixelY);
+                }
+            }
+            g2.draw(path);
+        }
+
+        private void drawImplicit(Graphics2D g2, int w, int h, double scaleX, double scaleY, String plotFunc,
+                boolean hasEquals) {
+            String lhs, rhs;
+            if (hasEquals) {
+                String[] parts = plotFunc.split("=");
+                lhs = parts[0];
+                rhs = (parts.length > 1) ? parts[1] : "0";
+            } else {
+                lhs = plotFunc;
+                rhs = "0";
+            }
+
+            // Adaptive Resolution: Faster when zoomed out, detailed when in?
+            // Fixed is fine for now, standardizing on 4px
+            int step = 4; // Desmos uses quad-trees, we use grid scan for simplicity
+
+            for (int px = 0; px < w; px += step) {
+                for (int py = 0; py < h; py += step) {
+                    double x1 = minX + (px / scaleX);
+                    double y1 = maxY - (py / scaleY);
+                    double val1 = FunctionParser.eval(lhs, x1, y1) - FunctionParser.eval(rhs, x1, y1);
+
+                    if (px + step < w) {
+                        double x2 = minX + ((px + step) / scaleX);
+                        double val2 = FunctionParser.eval(lhs, x2, y1) - FunctionParser.eval(rhs, x2, y1);
+                        if (Math.signum(val1) != Math.signum(val2))
+                            g2.drawLine(px, py, px + step, py);
+                    }
+                    if (py + step < h) {
+                        double y2 = maxY - ((py + step) / scaleY);
+                        double val2 = FunctionParser.eval(lhs, x1, y2) - FunctionParser.eval(rhs, x1, y2);
+                        if (Math.signum(val1) != Math.signum(val2))
+                            g2.drawLine(px, py, px, py + step);
                     }
                 }
-                g2.draw(path);
             }
         }
     }
