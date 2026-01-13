@@ -704,50 +704,60 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             }
 
             BigDecimal temp = BigDecimal.ZERO;
-            try {
-                switch (operation) {
-                    case '+':
-                        temp = num1.add(num2, mc);
-                        break;
-                    case '-':
-                        temp = num1.subtract(num2, mc);
-                        break;
-                    case '*':
-                        temp = num1.multiply(num2, mc);
-                        break;
-                    case '/':
-                        if (num2.compareTo(BigDecimal.ZERO) == 0) {
-                            appendStyled("\nError: Division by zero\n", errorStyle);
-                            return;
-                        }
-                        temp = num1.divide(num2, mc);
-                        break;
-                    case '^':
-                        temp = BigDecimal.valueOf(Math.pow(num1.doubleValue(), num2.doubleValue()));
-                        break;
-                    case 'L':
-                        temp = BigDecimal.valueOf(Math.log(num1.doubleValue()) / Math.log(num2.doubleValue()));
-                        break;
-                    case 'P':
-                        temp = BigDecimal.valueOf(perm(num1.longValue(), num2.longValue()));
-                        break;
-                    case 'C':
-                        temp = BigDecimal.valueOf(comb(num1.longValue(), num2.longValue()));
-                        break;
-                    case '%':
-                        temp = num1.remainder(num2, mc);
-                        break;
+
+            // Check for empty operation (Identity case: 137 =)
+            if (operation == 0 || operation == ' ') {
+                temp = num2;
+            } else {
+                try {
+                    switch (operation) {
+                        case '+':
+                            temp = num1.add(num2, mc);
+                            break;
+                        case '-':
+                            temp = num1.subtract(num2, mc);
+                            break;
+                        case '*':
+                            temp = num1.multiply(num2, mc);
+                            break;
+                        case '/':
+                            if (num2.compareTo(BigDecimal.ZERO) == 0) {
+                                appendStyled("\nError: Division by zero\n", errorStyle);
+                                return;
+                            }
+                            temp = num1.divide(num2, mc);
+                            break;
+                        case '^':
+                            temp = BigDecimal.valueOf(Math.pow(num1.doubleValue(), num2.doubleValue()));
+                            break;
+                        case 'L':
+                            temp = BigDecimal.valueOf(Math.log(num1.doubleValue()) / Math.log(num2.doubleValue()));
+                            break;
+                        case 'P':
+                            temp = BigDecimal.valueOf(perm(num1.longValue(), num2.longValue()));
+                            break;
+                        case 'C':
+                            temp = BigDecimal.valueOf(comb(num1.longValue(), num2.longValue()));
+                            break;
+                        case '%':
+                            temp = num1.remainder(num2, mc);
+                            break;
+                    }
+                } catch (Exception ex) {
+                    appendStyled("\nError: Invalid arithmetic\n", errorStyle);
+                    return;
                 }
-            } catch (Exception ex) {
-                appendStyled("\nError: Invalid arithmetic\n", errorStyle);
-                return;
             }
 
             String expressionToShow;
             if (equalsClicked) {
                 // Repeated equals
-                expressionToShow = formatResult(num1.doubleValue()) + getOperationSymbol(operation)
-                        + formatResult(num2.doubleValue());
+                if (operation == 0 || operation == ' ') {
+                    expressionToShow = formatResult(num1.doubleValue());
+                } else {
+                    expressionToShow = formatResult(num1.doubleValue()) + getOperationSymbol(operation)
+                            + formatResult(num2.doubleValue());
+                }
                 lastFullExpression = "";
             } else {
                 if (lastFullExpression.isEmpty()) {
@@ -755,7 +765,11 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     lastFullExpression = currentExpression;
                 } else {
                     // Use num2 explicitly to handle the implicit case (e.g. "134+" -> "134+134")
-                    expressionToShow = lastFullExpression + formatResult(num2.doubleValue());
+                    if (operation == 0 || operation == ' ') {
+                        expressionToShow = formatResult(num2.doubleValue());
+                    } else {
+                        expressionToShow = lastFullExpression + formatResult(num2.doubleValue());
+                    }
                 }
             }
 
