@@ -970,23 +970,36 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             }
 
             // Binary Operations (Set operation and wait for second operand)
-            if (src == logbButton || src == permutationButton || src == combinationButton || src == modButton) { // Added
-                                                                                                                 // modButton
+            if (src == logbButton || src == permutationButton || src == combinationButton || src == modButton) {
                 if (currentExpression.isEmpty())
                     return;
                 num1 = new BigDecimal(currentExpression, mc);
+
+                String opStr = "";
+                if (src == logbButton) {
+                    operation = 'L';
+                    opStr = " logb ";
+                } else if (src == permutationButton) {
+                    operation = 'P';
+                    opStr = " nPr ";
+                } else if (src == combinationButton) {
+                    operation = 'C';
+                    opStr = " nCr ";
+                } else if (src == modButton) {
+                    operation = '%';
+                    opStr = " % ";
+                }
+
+                appendStyled(opStr, userInputStyle);
+
+                lastExpression = formatResult(num1.doubleValue());
+                if (lastFullExpression.isEmpty()) {
+                    lastFullExpression = lastExpression + opStr;
+                } else {
+                    lastFullExpression = lastExpression + opStr;
+                }
+
                 currentExpression = "";
-                clearTextArea();
-
-                if (src == logbButton)
-                    operation = 'L'; // Log base
-                else if (src == permutationButton)
-                    operation = 'P'; // nPr
-                else if (src == combinationButton)
-                    operation = 'C'; // nCr
-                else if (src == modButton)
-                    operation = '%'; // Modulo
-
                 operationClicked = true;
                 equalsClicked = false;
                 return;
