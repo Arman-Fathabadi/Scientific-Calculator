@@ -1,0 +1,10 @@
+# Compiled class files
+*.class
+
+# macOS system files
+.DS_Store
+
+# IDE configs
+.idea/
+.vscode/
+*.iml
