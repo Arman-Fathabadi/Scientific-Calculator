@@ -1,6 +1,6 @@
 #!/bin/bash
-echo "Compiling..."
-javac ScientificCalculator.java
+echo "Compiling for Java 8 compatibility..."
+javac --release 8 ScientificCalculator.java
 
 echo "Creating Manifest..."
 echo "Main-Class: ScientificCalculator" > manifest.txt

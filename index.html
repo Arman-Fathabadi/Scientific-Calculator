@@ -24,10 +24,9 @@
             // Create a graphical environment 
             cheerpjCreateDisplay(480, 900, document.getElementById("cheerpj-display"));
             
-            // Run the JAR file
-            // Note: The path must be absolute from the web root or relative. 
-            // "/app/" mounts the current directory in CheerpJ 4.2 as well.
-            await cheerpjRunJar("/app/ScientificCalculator.jar");
+            // Run the JAR file explicitly using the Main Class
+            // This is often more robust than runJar
+            await cheerpjRunMain("ScientificCalculator", "/app/ScientificCalculator.jar");
         })();
     </script>
 
