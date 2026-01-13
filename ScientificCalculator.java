@@ -780,6 +780,12 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         // DEL
         if (e.getSource() == deleteButton) {
+            // If text is selected (Ctrl+A / Cmd+A), act as AC (Clear All)
+            if (textArea.getSelectedText() != null) {
+                clearButton.doClick();
+                return;
+            }
+
             if (!currentExpression.isEmpty() && !equalsClicked) {
                 currentExpression = currentExpression.substring(0, currentExpression.length() - 1);
                 String txt = getTextContent(textArea);
@@ -1176,6 +1182,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
     @Override
     public void keyTyped(KeyEvent e) {
+        // Consumer all typed events to prevent direct text entry into the JTextPane
+        // This stops the "2+=3" issue where raw keys are inserted bypassing logic
+        e.consume();
     }
 
     public static class MathEngine {
