@@ -739,11 +739,20 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             }
 
             String expressionToShow;
-            if (lastFullExpression.isEmpty()) {
-                expressionToShow = currentExpression;
-                lastFullExpression = currentExpression;
+            if (equalsClicked) {
+                // Repeating the last operation (chained instruction)
+                // We should reconstruct the string cleanly to avoid recursive appending
+                // e.g. "Num1 Op Num2"
+                expressionToShow = formatResult(num1.doubleValue()) + getOperationSymbol(operation)
+                        + formatResult(num2.doubleValue());
+                lastFullExpression = ""; // Clear this so we don't carry over old history in weird ways
             } else {
-                expressionToShow = lastFullExpression + currentExpression;
+                if (lastFullExpression.isEmpty()) {
+                    expressionToShow = currentExpression;
+                    lastFullExpression = currentExpression;
+                } else {
+                    expressionToShow = lastFullExpression + currentExpression;
+                }
             }
 
             BigDecimal temp2 = temp.stripTrailingZeros();
@@ -1031,6 +1040,31 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
         } catch (Exception ex) {
             appendStyled("\nError: " + ex.getMessage() + "\n", errorStyle);
+        }
+    }
+
+    private String getOperationSymbol(char op) {
+        switch (op) {
+            case '+':
+                return "+";
+            case '-':
+                return "−";
+            case '*':
+                return "×";
+            case '/':
+                return "÷";
+            case '^':
+                return "^";
+            case '%':
+                return "%";
+            case 'L':
+                return " logb ";
+            case 'P':
+                return " nPr ";
+            case 'C':
+                return " nCr ";
+            default:
+                return "";
         }
     }
 
