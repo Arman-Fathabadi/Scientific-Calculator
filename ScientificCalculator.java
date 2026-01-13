@@ -93,7 +93,8 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         frame.add(headerPanel);
 
         textArea = new JTextPane();
-        textArea.setFocusable(false);
+        textArea.setFocusable(true); // Allow focus for text selection (Cmd+A)
+        textArea.addKeyListener(this); // Ensure calculator keys work when text area has focus
         textArea.setFont(fo);
         textArea.setEditable(false);
         scrollPane = new JScrollPane(textArea);
@@ -1070,6 +1071,13 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         int keyCode = e.getKeyCode();
         boolean shiftDown = e.isShiftDown();
         boolean ctrlDown = e.isControlDown();
+        boolean metaDown = e.isMetaDown();
+
+        // Handle Select All (Cmd+A or Ctrl+A)
+        if ((metaDown || ctrlDown) && keyCode == KeyEvent.VK_A) {
+            textArea.selectAll();
+            return;
+        }
 
         if (!shiftDown && (keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9)) {
             int number = keyCode - KeyEvent.VK_0;
