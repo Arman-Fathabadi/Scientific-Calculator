@@ -1389,7 +1389,13 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
     // Simple Expression Parser for Graphing
     static class FunctionParser {
+        // Evaluate y = f(x)
         public static double eval(String expression, double x) {
+            return eval(expression, x, 0);
+        }
+
+        // Evaluate f(x, y)
+        public static double eval(String expression, double x, double y) {
             try {
                 return new Object() {
                     int pos = -1, ch;
@@ -1410,10 +1416,10 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
                     double parse() {
                         nextChar();
-                        double xVal = parseExpression();
+                        double val = parseExpression();
                         if (pos < expression.length())
                             throw new RuntimeException("Unexpected: " + (char) ch);
-                        return xVal;
+                        return val;
                     }
 
                     double parseExpression() {
@@ -1448,77 +1454,77 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                         if (eat('-'))
                             return -parseFactor(); // unary minus
 
-                        double xVal;
+                        double val;
                         int startPos = this.pos;
                         if (eat('(')) { // parentheses
-                            xVal = parseExpression();
+                            val = parseExpression();
                             eat(')');
                         } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
                             while ((ch >= '0' && ch <= '9') || ch == '.')
                                 nextChar();
-                            xVal = Double.parseDouble(expression.substring(startPos, this.pos));
+                            val = Double.parseDouble(expression.substring(startPos, this.pos));
                         } else if (ch == 'x') { // variable x
                             nextChar();
-                            xVal = x;
+                            val = x;
+                        } else if (ch == 'y') { // variable y
+                            nextChar();
+                            val = y;
                         } else if (ch >= 'a' && ch <= 'z') { // functions & constants
                             while (ch >= 'a' && ch <= 'z')
                                 nextChar();
                             String func = expression.substring(startPos, this.pos);
                             if (eat('(')) {
-                                xVal = parseExpression();
+                                val = parseExpression();
                                 eat(')');
                                 if (func.equals("sin"))
-                                    xVal = Math.sin(xVal);
+                                    val = Math.sin(val);
                                 else if (func.equals("cos"))
-                                    xVal = Math.cos(xVal);
+                                    val = Math.cos(val);
                                 else if (func.equals("tan"))
-                                    xVal = Math.tan(xVal);
+                                    val = Math.tan(val);
                                 else if (func.equals("sinh"))
-                                    xVal = Math.sinh(xVal);
+                                    val = Math.sinh(val);
                                 else if (func.equals("cosh"))
-                                    xVal = Math.cosh(xVal);
+                                    val = Math.cosh(val);
                                 else if (func.equals("tanh"))
-                                    xVal = Math.tanh(xVal);
+                                    val = Math.tanh(val);
                                 else if (func.equals("asinh"))
-                                    xVal = Math.log(xVal + Math.sqrt(xVal * xVal + 1));
+                                    val = Math.log(val + Math.sqrt(val * val + 1));
                                 else if (func.equals("acosh"))
-                                    xVal = Math.log(xVal + Math.sqrt(xVal * xVal - 1));
+                                    val = Math.log(val + Math.sqrt(val * val - 1));
                                 else if (func.equals("atanh"))
-                                    xVal = 0.5 * Math.log((1 + xVal) / (1 - xVal));
+                                    val = 0.5 * Math.log((1 + val) / (1 - val));
                                 else if (func.equals("sqrt"))
-                                    xVal = Math.sqrt(xVal);
+                                    val = Math.sqrt(val);
                                 else if (func.equals("log"))
-                                    xVal = Math.log10(xVal);
+                                    val = Math.log10(val);
                                 else if (func.equals("ln"))
-                                    xVal = Math.log(xVal);
+                                    val = Math.log(val);
                                 else if (func.equals("abs"))
-                                    xVal = Math.abs(xVal);
+                                    val = Math.abs(val);
                                 else if (func.equals("ceil"))
-                                    xVal = Math.ceil(xVal);
+                                    val = Math.ceil(val);
                                 else if (func.equals("floor"))
-                                    xVal = Math.floor(xVal);
+                                    val = Math.floor(val);
                                 else
                                     throw new RuntimeException("Unknown function: " + func);
                             } else {
-                                // Constants or variable acting as function without parens (rare but safe to
-                                // check)
-                                if (func.equals("x"))
-                                    xVal = x;
-                                else if (func.equals("pi"))
-                                    xVal = Math.PI;
+                                // Constants
+                                if (func.equals("pi"))
+                                    val = Math.PI;
                                 else if (func.equals("e"))
-                                    xVal = Math.E;
+                                    val = Math.E;
                                 else
-                                    throw new RuntimeException("Unknown variable/constant: " + func);
+                                    throw new RuntimeException("Unknown variable: " + func);
                             }
                         } else {
                             throw new RuntimeException("Unexpected: " + (char) ch);
                         }
 
                         if (eat('^'))
-                            xVal = Math.pow(xVal, parseFactor()); // exponentiation
+                            val = Math.pow(val, parseFactor()); // exponentiation
 
-                        return xVal;
+                        return val;
                     }
                 }.parse();
             } catch (Exception e) {
@@ -1772,45 +1778,94 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 }
             }
 
-            // Plot Function: y = sin(x) for simplicity
-            // In a real scientific calculator, this should parse 'currentExpression' with x
+            // Plotting Logic
             g2.setColor(new Color(255, 60, 60)); // Desmos Red
-            g2.setStroke(new BasicStroke(2.5f));
+            g2.setStroke(new BasicStroke(2.0f));
 
-            Path2D.Double path = new Path2D.Double();
-            boolean first = true;
+            String plotFunc = currentFunction.replace(" ", "");
+            boolean hasEquals = plotFunc.contains("=");
+            boolean isExplicit = !hasEquals;
 
-            // Step size in pixels
-            for (int i = 0; i <= w; i++) {
-                // Convert pixel X to logical X
-                double logicalX = minX + (i / scaleX);
-                double logicalY = FunctionParser.eval(currentFunction, logicalX);
-
-                // Convert logical Y to pixel Y
-                // pixelY = (maxY - logicalY) * scaleY
-                double pixelY = (maxY - logicalY) * scaleY;
-
-                // Avoid drawing lines to infinity if value is NaN or Infinite
-                if (Double.isNaN(pixelY) || Double.isInfinite(pixelY)) {
-                    first = true; // reset path
-                    continue;
-                }
-
-                // Clamp for drawing performance (optional, but good practice)
-                if (pixelY < -500 || pixelY > h + 500) {
-                    if (!first)
-                        path.lineTo(i, pixelY); // Draw to offscreen point to maintain line direction
-                    continue;
-                }
-
-                if (first) {
-                    path.moveTo(i, pixelY);
-                    first = false;
-                } else {
-                    path.lineTo(i, pixelY);
+            // Optimization: "y=..." with no 'y' on RHS is effectively explicit
+            if (hasEquals) {
+                String[] parts = plotFunc.split("=");
+                if (parts.length == 2 && parts[0].equals("y") && !parts[1].contains("y")) {
+                    isExplicit = true;
+                    plotFunc = parts[1];
                 }
             }
-            g2.draw(path);
+
+            if (!isExplicit) {
+                // Implicit Graphing: Grid Scan
+                // Evaluate LHS - RHS = 0
+                String lhs, rhs;
+                if (hasEquals) {
+                    String[] parts = plotFunc.split("=");
+                    lhs = parts[0];
+                    rhs = (parts.length > 1) ? parts[1] : "0";
+                } else {
+                    lhs = plotFunc;
+                    rhs = "0";
+                }
+
+                int step = 4; // Grid resolution in pixels (Tradeoff: Speed vs Quality)
+                for (int px = 0; px < w; px += step) {
+                    for (int py = 0; py < h; py += step) {
+                        double x1 = minX + (px / scaleX);
+                        double y1 = maxY - (py / scaleY);
+                        double val1 = FunctionParser.eval(lhs, x1, y1) - FunctionParser.eval(rhs, x1, y1);
+
+                        // Check Right Neighbor
+                        if (px + step < w) {
+                            double x2 = minX + ((px + step) / scaleX);
+                            double val2 = FunctionParser.eval(lhs, x2, y1) - FunctionParser.eval(rhs, x2, y1);
+                            if (Math.signum(val1) != Math.signum(val2)) {
+                                g2.drawLine(px, py, px + step, py);
+                            }
+                        }
+
+                        // Check Bottom Neighbor
+                        if (py + step < h) {
+                            double y2 = maxY - ((py + step) / scaleY);
+                            double val2 = FunctionParser.eval(lhs, x1, y2) - FunctionParser.eval(rhs, x1, y2);
+                            if (Math.signum(val1) != Math.signum(val2)) {
+                                g2.drawLine(px, py, px, py + step);
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Explicit Graphing: y = f(x)
+                Path2D.Double path = new Path2D.Double();
+                boolean first = true;
+
+                for (int i = 0; i <= w; i++) {
+                    double logicalX = minX + (i / scaleX);
+                    double logicalY = FunctionParser.eval(plotFunc, logicalX);
+
+                    double pixelY = (maxY - logicalY) * scaleY;
+
+                    if (Double.isNaN(pixelY) || Double.isInfinite(pixelY)) {
+                        first = true;
+                        continue;
+                    }
+
+                    // Clamp for performance
+                    if (pixelY < -500 || pixelY > h + 500) {
+                        if (!first)
+                            path.lineTo(i, pixelY);
+                        continue;
+                    }
+
+                    if (first) {
+                        path.moveTo(i, pixelY);
+                        first = false;
+                    } else {
+                        path.lineTo(i, pixelY);
+                    }
+                }
+                g2.draw(path);
+            }
         }
     }
 }
