@@ -695,9 +695,14 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     return;
                 }
                 lastNum2 = num2;
+            } else if (!equalsClicked && currentExpression.isEmpty()) {
+                // Implicit second operand (e.g. "2 + =") -> Treat as "2 + 2 ="
+                num2 = num1;
+                lastNum2 = num1;
             } else {
                 num2 = lastNum2;
             }
+
             BigDecimal temp = BigDecimal.ZERO;
             try {
                 switch (operation) {
@@ -720,16 +725,16 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     case '^':
                         temp = BigDecimal.valueOf(Math.pow(num1.doubleValue(), num2.doubleValue()));
                         break;
-                    case 'L': // Log Base
+                    case 'L':
                         temp = BigDecimal.valueOf(Math.log(num1.doubleValue()) / Math.log(num2.doubleValue()));
                         break;
-                    case 'P': // nPr
+                    case 'P':
                         temp = BigDecimal.valueOf(perm(num1.longValue(), num2.longValue()));
                         break;
-                    case 'C': // nCr
+                    case 'C':
                         temp = BigDecimal.valueOf(comb(num1.longValue(), num2.longValue()));
                         break;
-                    case '%': // Modulo
+                    case '%':
                         temp = num1.remainder(num2, mc);
                         break;
                 }
@@ -740,18 +745,17 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
 
             String expressionToShow;
             if (equalsClicked) {
-                // Repeating the last operation (chained instruction)
-                // We should reconstruct the string cleanly to avoid recursive appending
-                // e.g. "Num1 Op Num2"
+                // Repeated equals
                 expressionToShow = formatResult(num1.doubleValue()) + getOperationSymbol(operation)
                         + formatResult(num2.doubleValue());
-                lastFullExpression = ""; // Clear this so we don't carry over old history in weird ways
+                lastFullExpression = "";
             } else {
                 if (lastFullExpression.isEmpty()) {
                     expressionToShow = currentExpression;
                     lastFullExpression = currentExpression;
                 } else {
-                    expressionToShow = lastFullExpression + currentExpression;
+                    // Use num2 explicitly to handle the implicit case (e.g. "134+" -> "134+134")
+                    expressionToShow = lastFullExpression + formatResult(num2.doubleValue());
                 }
             }
 
