@@ -1374,32 +1374,57 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                         } else if (ch == 'x') { // variable x
                             nextChar();
                             xVal = x;
-                        } else if (ch >= 'a' && ch <= 'z') { // functions
+                        } else if (ch >= 'a' && ch <= 'z') { // functions & constants
                             while (ch >= 'a' && ch <= 'z')
                                 nextChar();
                             String func = expression.substring(startPos, this.pos);
                             if (eat('(')) {
                                 xVal = parseExpression();
                                 eat(')');
+                                if (func.equals("sin"))
+                                    xVal = Math.sin(xVal);
+                                else if (func.equals("cos"))
+                                    xVal = Math.cos(xVal);
+                                else if (func.equals("tan"))
+                                    xVal = Math.tan(xVal);
+                                else if (func.equals("sinh"))
+                                    xVal = Math.sinh(xVal);
+                                else if (func.equals("cosh"))
+                                    xVal = Math.cosh(xVal);
+                                else if (func.equals("tanh"))
+                                    xVal = Math.tanh(xVal);
+                                else if (func.equals("asinh"))
+                                    xVal = Math.log(xVal + Math.sqrt(xVal * xVal + 1));
+                                else if (func.equals("acosh"))
+                                    xVal = Math.log(xVal + Math.sqrt(xVal * xVal - 1));
+                                else if (func.equals("atanh"))
+                                    xVal = 0.5 * Math.log((1 + xVal) / (1 - xVal));
+                                else if (func.equals("sqrt"))
+                                    xVal = Math.sqrt(xVal);
+                                else if (func.equals("log"))
+                                    xVal = Math.log10(xVal);
+                                else if (func.equals("ln"))
+                                    xVal = Math.log(xVal);
+                                else if (func.equals("abs"))
+                                    xVal = Math.abs(xVal);
+                                else if (func.equals("ceil"))
+                                    xVal = Math.ceil(xVal);
+                                else if (func.equals("floor"))
+                                    xVal = Math.floor(xVal);
+                                else
+                                    throw new RuntimeException("Unknown function: " + func);
                             } else {
-                                xVal = parseFactor();
+                                // Constants or variable acting as function without parens (rare but safe to
+                                // check)
+                                if (func.equals("x"))
+                                    xVal = x;
+                                else if (func.equals("pi"))
+                                    xVal = Math.PI;
+                                else if (func.equals("e"))
+                                    xVal = Math.E;
+                                else
+                                    throw new RuntimeException("Unknown variable/constant: " + func);
                             }
-                            if (func.equals("sin"))
-                                xVal = Math.sin(xVal);
-                            else if (func.equals("cos"))
-                                xVal = Math.cos(xVal);
-                            else if (func.equals("tan"))
-                                xVal = Math.tan(xVal);
-                            else if (func.equals("sqrt"))
-                                xVal = Math.sqrt(xVal);
-                            else if (func.equals("log"))
-                                xVal = Math.log10(xVal);
-                            else if (func.equals("ln"))
-                                xVal = Math.log(xVal);
-                            else if (func.equals("abs"))
-                                xVal = Math.abs(xVal);
-                            else
-                                throw new RuntimeException("Unknown function: " + func);
                         } else {
                             throw new RuntimeException("Unexpected: " + (char) ch);
                         }
