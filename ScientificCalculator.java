@@ -75,12 +75,12 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     public ScientificCalculator() {
         frame = new JFrame("Scientific Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(480, 900);
+        frame.setSize(600, 900);
         frame.setLayout(null);
         frame.setResizable(true);
 
         headerPanel = new JPanel();
-        headerPanel.setBounds(5, 5, 460, 40);
+        headerPanel.setBounds(5, 5, 580, 40);
         headerPanel.setLayout(new GridLayout(1, 4, 5, 5));
         deleteButton = new JButton("DEL");
         clearButton = new JButton("AC");
@@ -97,7 +97,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         textArea.setFont(fo);
         textArea.setEditable(false);
         scrollPane = new JScrollPane(textArea);
-        scrollPane.setBounds(5, 50, 460, 120);
+        scrollPane.setBounds(5, 50, 580, 120);
         scrollPane.setBorder(new CompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)));
@@ -197,7 +197,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         panel = new JPanel();
-        panel.setBounds(5, 180, 460, 220);
+        panel.setBounds(5, 180, 580, 220);
         panel.setLayout(new GridLayout(4, 4, 10, 10));
         panel.add(numberButtons[7]);
         panel.add(numberButtons[8]);
@@ -217,7 +217,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         panel.add(divideButton);
 
         scientificPanel = new JPanel();
-        scientificPanel.setBounds(5, 410, 460, 120);
+        scientificPanel.setBounds(5, 410, 580, 120);
         scientificPanel.setLayout(new GridLayout(2, 4, 10, 10));
         scientificPanel.add(sinButton);
         scientificPanel.add(cosButton);
@@ -229,7 +229,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         scientificPanel.add(eButton);
 
         advancedPanel = new JPanel();
-        advancedPanel.setBounds(5, 540, 460, 300);
+        advancedPanel.setBounds(5, 540, 580, 300);
         advancedPanel.setLayout(new GridLayout(4, 5, 5, 5));
         sinhButton = new JButton("sinh");
         coshButton = new JButton("cosh");

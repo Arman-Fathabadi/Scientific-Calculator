@@ -12,7 +12,7 @@
     <div style="text-align: center;">
         <h2>Java Scientific Calculator (Running in Browser)</h2>
         <!-- The container for the Java Applet/Application -->
-        <div id="cheerpj-display" style="width: 480px; height: 900px; border: 1px solid #ccc; background: white; margin: 0 auto;"></div>
+        <div id="cheerpj-display" style="width: 600px; height: 900px; border: 1px solid #ccc; background: white; margin: 0 auto;"></div>
         <p style="margin-top: 10px; color: #666;">Powered by <a href="https://leaningtech.com/cheerpj/" target="_blank">CheerpJ 4.2</a></p>
     </div>
 
@@ -22,7 +22,7 @@
             await cheerpjInit();
             
             // Create a graphical environment 
-            cheerpjCreateDisplay(480, 900, document.getElementById("cheerpj-display"));
+            cheerpjCreateDisplay(600, 900, document.getElementById("cheerpj-display"));
             
             // Run the JAR file explicitly using the Main Class
             // This is often more robust than runJar
