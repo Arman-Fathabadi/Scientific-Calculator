@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator Demo</title>
+    <!-- CheerpJ Loader -->
+    <script src="https://cjrtnc.leaningtech.com/3.0/cj3loader.js"></script>
+</head>
+<body style="margin:0; padding:0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; font-family: sans-serif;">
+
+    <div style="text-align: center;">
+        <h2>Java Scientific Calculator (Running in Browser)</h2>
+        <!-- The container for the Java Applet/Application -->
+        <div id="cheerpj-display" style="width: 480px; height: 900px; border: 1px solid #ccc; background: white; margin: 0 auto;"></div>
+        <p style="margin-top: 10px; color: #666;">Powered by <a href="https://leaningtech.com/cheerpj/" target="_blank">CheerpJ</a></p>
+    </div>
+
+    <script>
+        // Initialize CheerpJ
+        // We expect the JAR file to be in the same directory as this HTML file
+        (async function() {
+            await cheerpjInit();
+            
+            // Create a graphical environment 
+            // The calculator size is roughly 480x900 based on the Java code
+            cheerpjCreateDisplay(480, 900, document.getElementById("cheerpj-display"));
+            
+            // Run the JAR file
+            // /app/ is the virtual mount point for the current web directory
+            await cheerpjRunJar("/app/ScientificCalculator.jar");
+        })();
+    </script>
+
+</body>
+</html>

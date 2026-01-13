@@ -2,7 +2,8 @@
 
 A powerful Scientific Calculator developed in Java Swing technology. This software provides basic scientific calculations, advanced mathematical operations, graphing capabilities, and developer tools such as base conversion.
 
-![Scientific Calculator](https://via.placeholder.com/800x600?text=Scientific+Calculator+preview)
+<!-- ![Scientific Calculator](path/to/your/screenshot.png) -->
+<!-- Tip: Take a screenshot of your running calculator and upload it to your repo, then link it here! -->
 
 ## Features
 
@@ -43,7 +44,7 @@ Make sure you are using the **Java Development Kit (JDK) version 8** or later.
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/yourusername/Scientific-Calculator.git
+git clone https://github.com/arman-fathabadi/Scientific-Calculator.git
 cd Scientific-Calculator
 ```
 
