@@ -773,7 +773,6 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             return;
         }
 
-        // Hyperbolic, etc.
         // Convert Button (Full Cross-Base Conversion)
         if (e.getSource() == conversionButton) {
             String[] options = {
