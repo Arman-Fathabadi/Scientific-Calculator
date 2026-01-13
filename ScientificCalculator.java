@@ -160,7 +160,24 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         themeToggleButton.setFocusable(false);
         themeToggleButton.setBorderPainted(true);
         themeToggleButton.setFocusPainted(false);
-        addButtonHoverEffect(themeToggleButton);
+        // Custom hover effect for themeToggleButton to handle dynamic theme changes
+        themeToggleButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                Color baseColor = isDarkMode ? darkButtonBackground : lightButtonBackground;
+                Color hoverColor = new Color(
+                        Math.min(baseColor.getRed() + 15, 255),
+                        Math.min(baseColor.getGreen() + 15, 255),
+                        Math.min(baseColor.getBlue() + 15, 255));
+                themeToggleButton.setBackground(hoverColor);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // Always reset to current theme's button background
+                themeToggleButton.setBackground(isDarkMode ? darkButtonBackground : lightButtonBackground);
+            }
+        });
 
         historyButton.addActionListener(this);
         historyButton.setFont(fo);
