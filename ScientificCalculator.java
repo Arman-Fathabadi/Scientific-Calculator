@@ -1543,6 +1543,18 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             controlPanel.setBackground(dark ? new Color(30, 30, 35) : Color.WHITE);
 
             JTextField inputField = new JTextField("sin(x)", 20);
+            // Fix: Add KeyListener for Select All (Cmd+A / Ctrl+A)
+            inputField.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    boolean isMeta = e.isMetaDown();
+                    boolean isCtrl = e.isControlDown();
+                    if ((isMeta || isCtrl) && e.getKeyCode() == KeyEvent.VK_A) {
+                        inputField.selectAll();
+                        e.consume();
+                    }
+                }
+            });
             JButton plotButton = new JButton("Plot");
 
             controlPanel.add(new JLabel("y = "));
