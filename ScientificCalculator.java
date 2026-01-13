@@ -97,6 +97,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         textArea.addKeyListener(this); // Ensure calculator keys work when text area has focus
         textArea.setFont(fo);
         textArea.setEditable(false);
+        textArea.setTransferHandler(null); // Block pasting (Cmd+V) to prevent invalid text insertion
         scrollPane = new JScrollPane(textArea);
         scrollPane.setBounds(5, 50, 580, 120);
         scrollPane.setBorder(new CompoundBorder(
