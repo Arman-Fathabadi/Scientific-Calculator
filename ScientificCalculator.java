@@ -1814,7 +1814,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 if (drawLabels && Math.abs(x) > 1e-10) { // Don't label axis 0
                     Color save = g2.getColor();
                     g2.setColor(labelColor);
-                    String lbl = formatLabel(x);
+                    String lbl = formatLabel(x, xStep);
                     int lblW = fm.stringWidth(lbl);
                     int xAxisY = (int) ((maxY - 0) * scaleY);
                     int yPos = (xAxisY < 0) ? 15 : (xAxisY > h) ? h - 5 : xAxisY + 20;
@@ -1834,7 +1834,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                 if (drawLabels && Math.abs(y) > 1e-10) {
                     Color save = g2.getColor();
                     g2.setColor(labelColor);
-                    String lbl = formatLabel(y);
+                    String lbl = formatLabel(y, yStep);
                     int lblW = fm.stringWidth(lbl);
                     int yAxisX = (int) ((0 - minX) * scaleX);
                     int xPos = (yAxisX < 0) ? 5 : (yAxisX > w) ? w - lblW - 5 : yAxisX - lblW - 5;
@@ -1846,12 +1846,20 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             }
         }
 
-        private String formatLabel(double val) {
+        private String formatLabel(double val, double step) {
             if (Math.abs(val) < 1e-10)
                 return "0";
             if (Math.abs(val - Math.round(val)) < 1e-9)
                 return String.valueOf((int) Math.round(val));
-            return String.format("%.2f", val);
+
+            if (step >= 1) {
+                return String.format("%.0f", val);
+            } else {
+                int digits = (int) Math.ceil(-Math.log10(step));
+                if (digits < 0)
+                    digits = 0;
+                return String.format("%." + digits + "f", val);
+            }
         }
 
         private void drawExplicit(Graphics2D g2, int w, int h, double scaleX, double scaleY, String func) {
