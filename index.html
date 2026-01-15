@@ -106,13 +106,13 @@
         }
 
         #cheerpj-display {
-            width: 620px;
-            height: 980px;
-            border-radius: 16px;
+            width: 602px;
+            height: 950px;
+            border-radius: 12px;
             border: 1px solid var(--border-color);
             overflow: hidden;
             box-shadow: 0 25px 80px rgba(108, 99, 255, 0.15), 0 10px 30px rgba(0, 0, 0, 0.4);
-            background: #1e1e2e; /* Fallback before CheerpJ loads */
+            background: linear-gradient(180deg, #4a90d9 0%, #e8e8e8 5%); /* Match calculator header + body */
         }
 
         .loading-text {
@@ -219,7 +219,7 @@
     <script>
         (async function() {
             await cheerpjInit();
-            cheerpjCreateDisplay(620, 980, document.getElementById("cheerpj-display"));
+            cheerpjCreateDisplay(602, 950, document.getElementById("cheerpj-display"));
             
             // Hide loading text once app starts
             document.querySelector('.loading-text').style.display = 'none';
