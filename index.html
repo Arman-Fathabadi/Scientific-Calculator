@@ -538,7 +538,18 @@
 
         // CheerpJ Initialization
         (async function() {
-            await cheerpjInit();
+            // Determine if we should start in dark mode
+            let isDark;
+            if (currentTheme === 'system') {
+                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else {
+                isDark = currentTheme === 'dark';
+            }
+            
+            // Pass theme to Java app via system property (only if sync is enabled)
+            const javaProps = syncEnabled ? { "darkMode": isDark ? "true" : "false" } : {};
+            
+            await cheerpjInit({ javaProperties: javaProps });
             cheerpjCreateDisplay(602, 950, document.getElementById("cheerpj-display"));
             
             // Hide loading text once app starts

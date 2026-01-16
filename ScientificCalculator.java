@@ -310,7 +310,10 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         frame.add(advancedPanel);
         frame.addKeyListener(this);
         frame.setFocusable(true);
-        applyTheme(false);
+
+        // Check for web theme sync via system property
+        boolean startDark = "true".equals(System.getProperty("darkMode", "false"));
+        applyTheme(startDark);
 
         frame.requestFocus();
         frame.setVisible(true);
