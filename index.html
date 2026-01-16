@@ -432,7 +432,7 @@
                 <div class="toggle-row">
                     <div class="toggle-text">
                         Sync with Calculator
-                        <small>Match website theme to Java app</small>
+                        <small>Refresh page after changing theme</small>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="syncToggle" onchange="toggleSync()">
@@ -473,7 +473,8 @@
     <script>
         // Settings State
         let currentTheme = localStorage.getItem('theme') || 'system';
-        let syncEnabled = localStorage.getItem('syncEnabled') === 'true';
+        // Default sync to true for new users
+        let syncEnabled = localStorage.getItem('syncEnabled') !== 'false';
 
         // Modal Controls
         function openSettings() {
@@ -546,10 +547,11 @@
                 isDark = currentTheme === 'dark';
             }
             
-            // Pass theme to Java app via system property (only if sync is enabled)
-            const javaProps = syncEnabled ? { "darkMode": isDark ? "true" : "false" } : {};
+            // Always pass theme to Java app via system property
+            // The sync toggle controls whether this is respected
+            const darkModeValue = isDark && syncEnabled ? "true" : "false";
             
-            await cheerpjInit({ javaProperties: javaProps });
+            await cheerpjInit({ javaProperties: { "darkMode": darkModeValue } });
             cheerpjCreateDisplay(602, 950, document.getElementById("cheerpj-display"));
             
             // Hide loading text once app starts
