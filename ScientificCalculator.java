@@ -72,7 +72,7 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     String lastExpression = "";
     String lastFullExpression = ""; // To store the full expression for history
 
-    public ScientificCalculator() {
+    public ScientificCalculator(boolean autoStartDark) {
         frame = new JFrame("Scientific Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 900);
@@ -311,9 +311,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         frame.addKeyListener(this);
         frame.setFocusable(true);
 
-        // Check for web theme sync via system property
-        boolean startDark = "true".equals(System.getProperty("darkMode", "false"));
-        applyTheme(startDark);
+        // Check for web theme sync via system property or constructor arg
+        boolean sysPropDark = "true".equals(System.getProperty("darkMode", "false"));
+        applyTheme(autoStartDark || sysPropDark);
 
         frame.requestFocus();
         frame.setVisible(true);
@@ -512,7 +512,13 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         } catch (Exception e) {
             e.printStackTrace();
         }
-        new ScientificCalculator();
+
+        boolean startDark = false;
+        if (args.length > 0 && "dark".equalsIgnoreCase(args[0])) {
+            startDark = true;
+        }
+
+        new ScientificCalculator(startDark);
     }
 
     @Override

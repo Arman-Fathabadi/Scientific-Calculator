@@ -547,17 +547,19 @@
                 isDark = currentTheme === 'dark';
             }
             
-            // Always pass theme to Java app via system property
+            // Pass theme to Java app via command line argument (more reliable than system property)
             // The sync toggle controls whether this is respected
-            const darkModeValue = isDark && syncEnabled ? "true" : "false";
+            const themeArg = isDark && syncEnabled ? "dark" : "light";
             
-            await cheerpjInit({ javaProperties: { "darkMode": darkModeValue } });
+            // We can still pass javaProperties just in case, but rely on args
+            await cheerpjInit({ javaProperties: { "darkMode": themeArg === "dark" ? "true" : "false" } });
             cheerpjCreateDisplay(602, 950, document.getElementById("cheerpj-display"));
             
             // Hide loading text once app starts
             document.querySelector('.loading-text').style.display = 'none';
             
-            await cheerpjRunMain("ScientificCalculator", "/app/ScientificCalculator.jar");
+            // Pass the theme argument to the main method
+            await cheerpjRunMain("ScientificCalculator", "/app/ScientificCalculator.jar", themeArg);
         })();
     </script>
 
