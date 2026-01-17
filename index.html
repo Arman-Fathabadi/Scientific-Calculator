@@ -432,7 +432,7 @@
                 <div class="toggle-row">
                     <div class="toggle-text">
                         Sync with Calculator
-                        <small>Refresh page after changing theme</small>
+                        <small>Instantly updates calculator theme</small>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="syncToggle" onchange="toggleSync()">
@@ -496,6 +496,7 @@
             localStorage.setItem('theme', theme);
             applyTheme();
             updateThemeUI();
+            syncWithJava();
         }
 
         function applyTheme() {
@@ -518,8 +519,30 @@
         function toggleSync() {
             syncEnabled = document.getElementById('syncToggle').checked;
             localStorage.setItem('syncEnabled', syncEnabled);
-            // Note: Actual sync with Java app would require CheerpJ interop
-            // This stores the preference for potential future implementation
+            syncWithJava();
+        }
+        
+        // Real-time Sync with Java App
+        function syncWithJava() {
+            if (!syncEnabled) return;
+            
+            // Determine current effective theme
+            let isDark;
+            if (currentTheme === 'system') {
+                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else {
+                isDark = currentTheme === 'dark';
+            }
+            
+            // Try to call Java method via CheerpJ
+            // This allows instant theme switching without reload!
+            try {
+                if (typeof cjCall !== 'undefined') {
+                    cjCall("ScientificCalculator", "setWebTheme", isDark ? "dark" : "light");
+                }
+            } catch (e) {
+                console.log("Java app not ready yet or cjCall failed: " + e);
+            }
         }
 
         // Initialize on page load
@@ -531,7 +554,10 @@
 
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            if (currentTheme === 'system') applyTheme();
+            if (currentTheme === 'system') {
+                applyTheme();
+                syncWithJava();
+            }
         });
 
         // Run initialization
