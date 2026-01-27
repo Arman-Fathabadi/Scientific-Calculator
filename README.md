@@ -1,91 +1,61 @@
 # Java Scientific Calculator
 
-A powerful Scientific Calculator built using Java Swing. Comes with advanced math calculations, **Desmos-style graphs** with support for implicit equations, complex numbers, and programmer tools such as base conversion.
-
----
+A scientific calculator with a lot of power and created in Java swing. Supports high level math operations including desmos-style graphs including implicit equations, complex numbers, programmers tools including Base converters.
 
 ## 🌐 Live Demo
 
 **[Try it out in your browser →](https://scientific-calculator-one-ebon.vercel.app/)**
 
 No need to install anything. Runs on CheerpJ.
-
----
+> **New:** Dark/Light Mode Germany Contributor: Added Theme Sync and Settings Menu with Dark/Light Mode with a Theme Sync Toggle to match the theme to your liking!
 
 ## Features
 
 ### Full Math Engine
-*   **Operations**: `+`, `-`, `×`, `/`, `xʸ`, `√`, `π`, `e`.
-*   **Trigonometry**: `sin`, `cos`, `tan` with Degree/Radian switch.
+*   **Operations**: `+`, `-`, `x`, `/`, `xʸ`, `√`, `π`, `e`.
+*   **Trigonometry**: `sin`, `Cos`, `tan` with Degree/Radian Switch.
 *   **Hyperbolic Functions**: `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`.
-*   **Logarithms**: Natural Logarithm (`ln`), Base-10 Logarithm (`log`), Base-2 (`log₂`), Custom Base (`logb`).
-*   **Combinatorics**: Factorial (`n!`), Permutations (`nPr`), Combinations (`nCr`).
-*   **Utilities**: Modulo (`%`), Absolute Value (`abs`), `ceil`, `floor`.
+*   **Logarithms**: Base-10 Logarithm (`log`), Natural logarithm (`ln`), Base-2 (`log2`) and Custom Base (`logb`).
+*   **Combinatorics Basic**: Factorial (`n!`), Permutations (`nPr`), Combinations (`nCr`).
+*   **Utilities**: `ceil`, `floor`, Modulo (`%`) Absolute Value (`abs`).
 
-### Graphing Calculator (Desmos-Style)
-*   **Explicit Functions**: Graph `y = sin(x)`, `y = x^2`, and so on.
-*   **Implicit Equations**: Plot circles (`x^2 + y^2 = 25`), hyperbolas, and complex equations such as `y = cos(x + y)`.
-*   **Dynamic Grid**: Automatic scaling of grid lines that change with zoom level (0.1, 1, 10...).
+### The SimWall Street (Desmos-Style) Graphing Calculator
+*   **Explicit Functions**: Graph `y = sin(x)`, `y = x^2`, etc.
+*   **Implicit Equations**: Plot circles (`x^2 + y^2 = 25`), hyperbolas and more complex equations (`y = cos(x + y)`).
+*   **Dynamic Grid**: The grid lines are automatically adjusted in terms of greatness to zoom index (0.1, 1, 10...).
 *   **Navigation**:
     *   Pan: Drag the canvas.
     *   Zoom: Mouse wheel or `+`/`-` buttons.
-    *   Axis sliders for fine control.
-*   **Smart Parser**: Implicit multiplication (`2x`, `xy`), all mathematical functions.
+    *   High quality axis sliders.
+*   **Smart Parser**: implicit multiplication (`2x`, `xy`), and all the functions of mathematics.
 
 ### Developer Tools
-*   **Base Converter**: Decimal ↔ Hexadecimal ↔ Binary ↔ Octal.
-*   **Complex Numbers**: Add, subtract, multiply, divide complex numbers.
-*   **Calculation History**: View all previous calculations.
+*   **Base Converter**: Decimal to Hexadecimal to Binary.
+*   **Numbers of the complex type**: Add, subtract, multiply and divide complex numbers.
+*   **History of calculation**: View all past calculations.
 
 ### Modern UI/UX
-*   **Dark & Light Modes**: Elegant designs with no visual artifacts.
+*   **Dark/Light Modes**: Gorgeous and graphics free designs.
+*   **Web Integration**: Professional Web environments, featuring theme updated automatically.
 *   **Keyboard Support**:
     *   `Escape`: Clear All (AC)
-    *   `Backspace`/`Delete`: Delete last character
+    *   `Backspace`/`delete`: This marks the previous character as deleted.
     *   `Cmd+A` / `Ctrl+A`: Select all
-    *   `Shift + 8`: Multiply (`×`)
+    *   `Shift + 8`: Multiply (`x`)
     *   `Shift + 6`: Power (`^`)
     *   `Shift + 1`: Factorial (`!`)
     *   `Shift + 5`: Modulo (`%`)
-
----
 
 ## Installation & Run
 
 Requires **Java 8+**.
 
 ### Clone & Run
+
+Git clone is the tool used to create a clone of this case.
 ```bash
 git clone https://github.com/Arman-Fathabadi/Scientific-Calculator.git
 cd Scientific-Calculator
 javac ScientificCalculator.java
 java ScientificCalculator
 ```
-
-### Run as JAR
-```bash
-java -jar ScientificCalculator.jar
-```
-
----
-
-## Usage Examples
-
-| Action | Steps | Result |
-|--------|-------|--------|
-| Permutations | `5` → `nPr` → `2` → `=` | `20` |
-| Circle Graph | Graph → `x^2 + y^2 = 25` → Plot | Circle |
-| Hex Conversion | Convert → Decimal → Hex → `255` | `FF` |
-| Custom Log | `8` → `logb` → `2` → `=` | `3` |
-
----
-
-## Contributing
-
-Pull requests are welcome! Issues are open for reporting bugs and/or suggesting new features.
-
----
-
-## License
-
-MIT License

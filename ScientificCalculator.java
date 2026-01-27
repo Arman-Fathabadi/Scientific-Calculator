@@ -72,9 +72,6 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
     String lastExpression = "";
     String lastFullExpression = ""; // To store the full expression for history
 
-    // Static reference for JavaScript interop
-    public static ScientificCalculator instance;
-
     public ScientificCalculator(boolean autoStartDark) {
         frame = new JFrame("Scientific Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -82,7 +79,6 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         frame.setSize(600, 900);
         frame.setLayout(null);
         frame.setResizable(true);
-        instance = this; // Capture instance
 
         headerPanel = new JPanel();
         headerPanel.setBounds(5, 5, 580, 40);
@@ -1939,18 +1935,6 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     }
                 }
             }
-        }
-    }
-
-    // API method for JavaScript to call via CheerpJ
-    public static void setWebTheme(String mode) {
-        if (instance != null) {
-            final boolean dark = "dark".equalsIgnoreCase(mode);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    instance.applyTheme(dark);
-                }
-            });
         }
     }
 }

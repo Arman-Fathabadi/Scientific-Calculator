@@ -523,9 +523,6 @@
             location.reload();
         }
         
-        // Real-time Sync with Java App
-
-
         // Initialize on page load
         function initSettings() {
             applyTheme();
@@ -533,7 +530,6 @@
             document.getElementById('syncToggle').checked = syncEnabled;
         }
 
-        // Listen for system theme changes
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             if (currentTheme === 'system') {
