@@ -432,7 +432,7 @@
                 <div class="toggle-row">
                     <div class="toggle-text">
                         Sync with Calculator
-                        <small>Instantly updates calculator theme</small>
+                        <small>Reloads page to apply theme</small>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="syncToggle" onchange="toggleSync()">
@@ -496,7 +496,8 @@
             localStorage.setItem('theme', theme);
             applyTheme();
             updateThemeUI();
-            syncWithJava();
+            // Reload to ensuring clean state for the Java app
+            location.reload(); 
         }
 
         function applyTheme() {
@@ -519,31 +520,11 @@
         function toggleSync() {
             syncEnabled = document.getElementById('syncToggle').checked;
             localStorage.setItem('syncEnabled', syncEnabled);
-            syncWithJava();
+            location.reload();
         }
         
         // Real-time Sync with Java App
-        function syncWithJava() {
-            if (!syncEnabled) return;
-            
-            // Determine current effective theme
-            let isDark;
-            if (currentTheme === 'system') {
-                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            } else {
-                isDark = currentTheme === 'dark';
-            }
-            
-            // Try to call Java method via CheerpJ
-            // This allows instant theme switching without reload!
-            try {
-                if (typeof cjCall !== 'undefined') {
-                    cjCall("ScientificCalculator", "setWebTheme", isDark ? "dark" : "light");
-                }
-            } catch (e) {
-                console.log("Java app not ready yet or cjCall failed: " + e);
-            }
-        }
+
 
         // Initialize on page load
         function initSettings() {
@@ -553,10 +534,10 @@
         }
 
         // Listen for system theme changes
+        // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             if (currentTheme === 'system') {
-                applyTheme();
-                syncWithJava();
+                location.reload();
             }
         });
 
