@@ -1407,138 +1407,178 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         // Evaluate f(x, y)
         public static double eval(String expression, double x, double y) {
             try {
-                return new Object() {
-                    int pos = -1, ch;
+                // Tokenize
+                java.util.List<String> tokens = new java.util.ArrayList<>();
+                int n = expression.length();
+                boolean expectOperand = true;
 
-                    void nextChar() {
-                        ch = (++pos < expression.length()) ? expression.charAt(pos) : -1;
+                for (int i = 0; i < n; ) {
+                    char c = expression.charAt(i);
+                    if (c == ' ') {
+                        i++;
+                        continue;
                     }
-
-                    boolean eat(int charToEat) {
-                        while (ch == ' ')
-                            nextChar();
-                        if (ch == charToEat) {
-                            nextChar();
-                            return true;
-                        }
-                        return false;
-                    }
-
-                    double parse() {
-                        nextChar();
-                        double val = parseExpression();
-                        if (pos < expression.length())
-                            throw new RuntimeException("Unexpected: " + (char) ch);
-                        return val;
-                    }
-
-                    double parseExpression() {
-                        double xVal = parseTerm();
-                        for (;;) {
-                            if (eat('+'))
-                                xVal += parseTerm(); // addition
-                            else if (eat('-'))
-                                xVal -= parseTerm(); // subtraction
-                            else
-                                return xVal;
-                        }
-                    }
-
-                    double parseTerm() {
-                        double xVal = parseFactor();
-                        for (;;) {
-                            if (eat('*'))
-                                xVal *= parseFactor(); // multiplication
-                            else if (eat('/'))
-                                xVal /= parseFactor(); // division
-                            else if (ch == '(' || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '.')
-                                xVal *= parseFactor(); // implicit multiplication
-                            else
-                                return xVal;
-                        }
-                    }
-
-                    double parseFactor() {
-                        if (eat('+'))
-                            return parseFactor(); // unary plus
-                        if (eat('-'))
-                            return -parseFactor(); // unary minus
-
-                        double val;
-                        int startPos = this.pos;
-                        if (eat('(')) { // parentheses
-                            val = parseExpression();
-                            eat(')');
-                        } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
-                            while ((ch >= '0' && ch <= '9') || ch == '.')
-                                nextChar();
-                            val = Double.parseDouble(expression.substring(startPos, this.pos));
-                        } else if (ch == 'x') { // variable x
-                            nextChar();
-                            val = x;
-                        } else if (ch == 'y') { // variable y
-                            nextChar();
-                            val = y;
-                        } else if (ch >= 'a' && ch <= 'z') { // functions & constants
-                            while (ch >= 'a' && ch <= 'z')
-                                nextChar();
-                            String func = expression.substring(startPos, this.pos);
-                            if (eat('(')) {
-                                val = parseExpression();
-                                eat(')');
-                                if (func.equals("sin"))
-                                    val = Math.sin(val);
-                                else if (func.equals("cos"))
-                                    val = Math.cos(val);
-                                else if (func.equals("tan"))
-                                    val = Math.tan(val);
-                                else if (func.equals("sinh"))
-                                    val = Math.sinh(val);
-                                else if (func.equals("cosh"))
-                                    val = Math.cosh(val);
-                                else if (func.equals("tanh"))
-                                    val = Math.tanh(val);
-                                else if (func.equals("asinh"))
-                                    val = Math.log(val + Math.sqrt(val * val + 1));
-                                else if (func.equals("acosh"))
-                                    val = Math.log(val + Math.sqrt(val * val - 1));
-                                else if (func.equals("atanh"))
-                                    val = 0.5 * Math.log((1 + val) / (1 - val));
-                                else if (func.equals("sqrt"))
-                                    val = Math.sqrt(val);
-                                else if (func.equals("log"))
-                                    val = Math.log10(val);
-                                else if (func.equals("ln"))
-                                    val = Math.log(val);
-                                else if (func.equals("abs"))
-                                    val = Math.abs(val);
-                                else if (func.equals("ceil"))
-                                    val = Math.ceil(val);
-                                else if (func.equals("floor"))
-                                    val = Math.floor(val);
-                                else
-                                    throw new RuntimeException("Unknown function: " + func);
-                            } else {
-                                // Constants
-                                if (func.equals("pi"))
-                                    val = Math.PI;
-                                else if (func.equals("e"))
-                                    val = Math.E;
-                                else
-                                    throw new RuntimeException("Unknown variable: " + func);
-                            }
+                    if (Character.isDigit(c) || c == '.') {
+                        int j = i;
+                        while (j < n && (Character.isDigit(expression.charAt(j)) || expression.charAt(j) == '.')) j++;
+                        tokens.add(expression.substring(i, j));
+                        i = j;
+                        expectOperand = false;
+                    } else if (c == 'x' || c == 'y') {
+                        tokens.add(String.valueOf(c));
+                        i++;
+                        expectOperand = false;
+                    } else if (Character.isLetter(c)) {
+                        int j = i;
+                        while (j < n && Character.isLetter(expression.charAt(j))) j++;
+                        tokens.add(expression.substring(i, j));
+                        i = j;
+                        if (tokens.get(tokens.size() - 1).equals("pi") || tokens.get(tokens.size() - 1).equals("e")) {
+                            expectOperand = false;
                         } else {
-                            throw new RuntimeException("Unexpected: " + (char) ch);
+                            expectOperand = true;
                         }
-
-                        if (eat('^'))
-                            val = Math.pow(val, parseFactor()); // exponentiation
-
-                        return val;
+                    } else if (c == '-' && expectOperand) {
+                        tokens.add("u-");
+                        i++;
+                    } else if (c == '+' && expectOperand) {
+                        i++;
+                    } else if ("+-*/^()".indexOf(c) != -1) {
+                        tokens.add(String.valueOf(c));
+                        if (c == '(' || c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
+                            expectOperand = true;
+                        } else if (c == ')') {
+                            expectOperand = false;
+                        }
+                        i++;
+                    } else {
+                        throw new RuntimeException("Unexpected: " + c);
                     }
-                }.parse();
+                }
+
+                // Handle implicit multiplication
+                java.util.List<String> newTokens = new java.util.ArrayList<>();
+                for (int i = 0; i < tokens.size(); i++) {
+                    String t = tokens.get(i);
+                    newTokens.add(t);
+                    if (i < tokens.size() - 1) {
+                        String next = tokens.get(i + 1);
+                        boolean tIsOperand = isNumber(t) || t.equals("x") || t.equals("y") || t.equals("pi") || t.equals("e") || t.equals(")");
+                        boolean nextIsOperand = isNumber(next) || next.equals("x") || next.equals("y") || next.equals("pi") || next.equals("e") || next.equals("(") || isFunction(next);
+                        if (tIsOperand && nextIsOperand) {
+                            newTokens.add("*");
+                        }
+                    }
+                }
+                tokens = newTokens;
+
+                java.util.Stack<Double> values = new java.util.Stack<>();
+                java.util.Stack<String> ops = new java.util.Stack<>();
+
+                for (String token : tokens) {
+                    if (isNumber(token)) {
+                        values.push(Double.parseDouble(token));
+                    } else if (token.equals("x")) {
+                        values.push(x);
+                    } else if (token.equals("y")) {
+                        values.push(y);
+                    } else if (token.equals("pi")) {
+                        values.push(Math.PI);
+                    } else if (token.equals("e")) {
+                        values.push(Math.E);
+                    } else if (isFunction(token)) {
+                        ops.push(token);
+                    } else if (token.equals("(")) {
+                        ops.push(token);
+                    } else if (token.equals(")")) {
+                        while (!ops.isEmpty() && !ops.peek().equals("(")) {
+                            applyTop(ops, values);
+                        }
+                        if (!ops.isEmpty()) ops.pop();
+                        if (!ops.isEmpty() && isFunction(ops.peek())) {
+                            applyTop(ops, values);
+                        }
+                    } else { // Operator
+                        while (!ops.isEmpty() && precedence(ops.peek()) >= precedence(token)) {
+                            if (precedence(ops.peek()) == precedence(token) && isRightAssociative(token)) {
+                                break;
+                            }
+                            applyTop(ops, values);
+                        }
+                        ops.push(token);
+                    }
+                }
+
+                while (!ops.isEmpty()) {
+                    applyTop(ops, values);
+                }
+
+                return values.isEmpty() ? Double.NaN : values.pop();
+
             } catch (Exception e) {
                 return Double.NaN;
+            }
+        }
+
+        private static boolean isNumber(String t) {
+            if (t.isEmpty()) return false;
+            char c = t.charAt(0);
+            return Character.isDigit(c) || c == '.';
+        }
+
+        private static boolean isFunction(String t) {
+            return t.equals("sin") || t.equals("cos") || t.equals("tan") ||
+                   t.equals("sinh") || t.equals("cosh") || t.equals("tanh") ||
+                   t.equals("asinh") || t.equals("acosh") || t.equals("atanh") ||
+                   t.equals("sqrt") || t.equals("log") || t.equals("ln") ||
+                   t.equals("abs") || t.equals("ceil") || t.equals("floor");
+        }
+
+        private static int precedence(String op) {
+            if (op.equals("u-")) return 4;
+            if (op.equals("^")) return 3;
+            if (op.equals("*") || op.equals("/")) return 2;
+            if (op.equals("+") || op.equals("-")) return 1;
+            return 0;
+        }
+
+        private static boolean isRightAssociative(String op) {
+            return op.equals("^") || op.equals("u-");
+        }
+
+        private static void applyTop(java.util.Stack<String> ops, java.util.Stack<Double> values) {
+            String op = ops.pop();
+            if (op.equals("u-")) {
+                values.push(-values.pop());
+            } else if (isFunction(op)) {
+                double val = values.pop();
+                switch (op) {
+                    case "sin": values.push(Math.sin(val)); break;
+                    case "cos": values.push(Math.cos(val)); break;
+                    case "tan": values.push(Math.tan(val)); break;
+                    case "sinh": values.push(Math.sinh(val)); break;
+                    case "cosh": values.push(Math.cosh(val)); break;
+                    case "tanh": values.push(Math.tanh(val)); break;
+                    case "asinh": values.push(Math.log(val + Math.sqrt(val * val + 1))); break;
+                    case "acosh": values.push(Math.log(val + Math.sqrt(val * val - 1))); break;
+                    case "atanh": values.push(0.5 * Math.log((1 + val) / (1 - val))); break;
+                    case "sqrt": values.push(Math.sqrt(val)); break;
+                    case "log": values.push(Math.log10(val)); break;
+                    case "ln": values.push(Math.log(val)); break;
+                    case "abs": values.push(Math.abs(val)); break;
+                    case "ceil": values.push(Math.ceil(val)); break;
+                    case "floor": values.push(Math.floor(val)); break;
+                }
+            } else {
+                double b = values.pop();
+                double a = values.pop();
+                switch (op) {
+                    case "+": values.push(a + b); break;
+                    case "-": values.push(a - b); break;
+                    case "*": values.push(a * b); break;
+                    case "/": values.push(a / b); break;
+                    case "^": values.push(Math.pow(a, b)); break;
+                }
             }
         }
     }
