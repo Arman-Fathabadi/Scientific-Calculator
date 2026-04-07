@@ -596,42 +596,46 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             if (currentExpression.isEmpty())
                 return;
             try {
-                double value = Double.parseDouble(currentExpression);
-                double tempResult = 0;
+                BigDecimal value = new BigDecimal(currentExpression);
+                BigDecimal tempResult = BigDecimal.ZERO;
                 String func = "";
                 if (e.getSource() == sinButton) {
                     func = "sin";
-                    tempResult = Math.sin(isDegreeMode ? Math.toRadians(value) : value);
+                    BigDecimal rad = isDegreeMode ? value.multiply(BigDecimalMath.PI).divide(new BigDecimal("180"), mc) : value;
+                    tempResult = BigDecimalMath.sin(rad, MathContext.DECIMAL128);
                 } else if (e.getSource() == cosButton) {
                     func = "cos";
-                    tempResult = Math.cos(isDegreeMode ? Math.toRadians(value) : value);
+                    BigDecimal rad = isDegreeMode ? value.multiply(BigDecimalMath.PI).divide(new BigDecimal("180"), mc) : value;
+                    tempResult = BigDecimalMath.cos(rad, MathContext.DECIMAL128);
                 } else if (e.getSource() == tanButton) {
                     func = "tan";
-                    tempResult = Math.tan(isDegreeMode ? Math.toRadians(value) : value);
+                    BigDecimal rad = isDegreeMode ? value.multiply(BigDecimalMath.PI).divide(new BigDecimal("180"), mc) : value;
+                    tempResult = BigDecimalMath.tan(rad, MathContext.DECIMAL128);
                 } else if (e.getSource() == logButton) {
-                    if (value <= 0) {
+                    if (value.compareTo(BigDecimal.ZERO) <= 0) {
                         appendStyled("\nError: Log of non-positive number\n", errorStyle);
                         return;
                     }
                     func = "log";
-                    tempResult = Math.log10(value);
+                    tempResult = BigDecimal.valueOf(Math.log10(value.doubleValue()));
                 } else if (e.getSource() == sqrtButton) {
-                    if (value < 0) {
+                    if (value.compareTo(BigDecimal.ZERO) < 0) {
                         appendStyled("\nError: Square root of negative number\n", errorStyle);
                         return;
                     }
                     func = "√";
-                    tempResult = Math.sqrt(value);
+                    tempResult = value.sqrt(MathContext.DECIMAL128);
                 }
                 clearTextArea();
 
-                String expr = func + "(" + value + ")=" + formatResult(tempResult);
+                double displayDouble = tempResult.doubleValue();
+                String expr = func + "(" + value.toPlainString() + ")=" + formatResult(displayDouble);
                 appendStyled(expr + "\n", resultStyle);
 
                 lastFullExpression = expr;
-                lastExpression = formatResult(tempResult);
-                currentExpression = String.valueOf(tempResult);
-                num1 = BigDecimal.valueOf(tempResult);
+                lastExpression = formatResult(displayDouble);
+                currentExpression = tempResult.round(MathContext.DECIMAL64).toPlainString();
+                num1 = tempResult;
                 equalsClicked = true;
                 operationClicked = false;
             } catch (Exception ex) {
@@ -1294,6 +1298,64 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
             res = res * (n - i + 1) / i;
         }
         return res;
+    }
+
+    public static class BigDecimalMath {
+        public static final BigDecimal PI = new BigDecimal("3.141592653589793238462643383279502884197169399375105820974944592307816406286");
+        public static final BigDecimal TWO_PI = PI.multiply(new BigDecimal("2"));
+
+        private static BigDecimal normalizeAngle(BigDecimal x) {
+            BigDecimal[] divAndRem = x.divideAndRemainder(TWO_PI, MathContext.DECIMAL128);
+            BigDecimal rem = divAndRem[1];
+            if (rem.compareTo(PI) > 0) {
+                rem = rem.subtract(TWO_PI);
+            } else if (rem.compareTo(PI.negate()) < 0) {
+                rem = rem.add(TWO_PI);
+            }
+            return rem;
+        }
+
+        public static BigDecimal sin(BigDecimal x, MathContext mc) {
+            x = normalizeAngle(x);
+            BigDecimal result = x;
+            BigDecimal term = x;
+            BigDecimal xSquared = x.multiply(x, mc);
+            int i = 1;
+            while (term.abs().compareTo(BigDecimal.valueOf(1e-18)) > 0 && i < 100) {
+                term = term.multiply(xSquared, mc)
+                        .divide(BigDecimal.valueOf(2L * i * (2L * i + 1)), mc).negate();
+                result = result.add(term, mc);
+                i++;
+            }
+            if (result.abs().compareTo(BigDecimal.valueOf(1e-14)) < 0) return BigDecimal.ZERO;
+            if (result.subtract(BigDecimal.ONE).abs().compareTo(BigDecimal.valueOf(1e-14)) < 0) return BigDecimal.ONE;
+            if (result.add(BigDecimal.ONE).abs().compareTo(BigDecimal.valueOf(1e-14)) < 0) return BigDecimal.ONE.negate();
+            return result;
+        }
+
+        public static BigDecimal cos(BigDecimal x, MathContext mc) {
+            x = normalizeAngle(x);
+            BigDecimal result = BigDecimal.ONE;
+            BigDecimal term = BigDecimal.ONE;
+            BigDecimal xSquared = x.multiply(x, mc);
+            int i = 1;
+            while (term.abs().compareTo(BigDecimal.valueOf(1e-18)) > 0 && i < 100) {
+                term = term.multiply(xSquared, mc)
+                        .divide(BigDecimal.valueOf(2L * i * (2L * i - 1)), mc).negate();
+                result = result.add(term, mc);
+                i++;
+            }
+            if (result.abs().compareTo(BigDecimal.valueOf(1e-14)) < 0) return BigDecimal.ZERO;
+            if (result.subtract(BigDecimal.ONE).abs().compareTo(BigDecimal.valueOf(1e-14)) < 0) return BigDecimal.ONE;
+            if (result.add(BigDecimal.ONE).abs().compareTo(BigDecimal.valueOf(1e-14)) < 0) return BigDecimal.ONE.negate();
+            return result;
+        }
+
+        public static BigDecimal tan(BigDecimal x, MathContext mc) {
+            BigDecimal c = cos(x, mc);
+            if (c.compareTo(BigDecimal.ZERO) == 0) throw new ArithmeticException("Tan of PI/2 is undefined");
+            return sin(x, mc).divide(c, mc);
+        }
     }
 
     public static class MatrixOps {
