@@ -96,6 +96,27 @@ public class ParserTest {
         testNaN("Empty Parens", "()");
         testNaN("Invalid tokens", "5 + %");
 
+        // === CATEGORY 9: Unary minus vs power, scientific notation (regressions) ===
+        System.out.println("\n--- Unary Minus vs Power ---");
+        testEquals("-2^2 is -(2^2)", -4.0, "-2^2");
+        testXY("-x^2 at x=2", -4.0, "-x^2", 2, 0);
+        testXY("-x^2 at x=-3", -9.0, "-x^2", -3, 0);
+        testEquals("(-2)^2", 4.0, "(-2)^2");
+        testEquals("2^-2 still 1/4", 0.25, "2^-2");
+        testEquals("2*-3", -6.0, "2*-3");
+        testEquals("-2^2 + 10", 6.0, "-2^2 + 10");
+        testEquals("-2^-2", -0.25, "-2^-2");
+        testEquals("double negation of -2^2", 4.0, "-(-2^2)*-1*-1*-1*-1");
+        testEquals("-3*2", -6.0, "-3*2");
+        testEquals("-6/2", -3.0, "-6/2");
+        testEquals("2^3^2 unchanged", 512.0, "2^3^2");
+        System.out.println("\n--- Scientific Notation ---");
+        testEquals("1e3", 1000.0, "1e3");
+        testEquals("2.5E-4", 0.00025, "2.5E-4");
+        testEquals("1e+2", 100.0, "1e+2");
+        testEquals("2e (Euler, implicit mult)", 2 * Math.E, "2e");
+        testEquals("2e*3 (Euler)", 6 * Math.E, "2e*3");
+
         System.out.println("\n==================================");
         System.out.println("TEST RUN COMPLETE");
         System.out.println("Passed: " + passed + " / " + (passed + failed));

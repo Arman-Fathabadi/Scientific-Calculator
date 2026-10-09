@@ -1483,6 +1483,16 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                     if (Character.isDigit(c) || c == '.') {
                         int j = i;
                         while (j < n && (Character.isDigit(expression.charAt(j)) || expression.charAt(j) == '.')) j++;
+                        // Scientific notation: 1e3, 2.5E-4. Only when digits follow the 'e',
+                        // so "2e" and "2e*3" stay implicit multiplication by Euler's number.
+                        if (j < n && (expression.charAt(j) == 'e' || expression.charAt(j) == 'E')) {
+                            int k = j + 1;
+                            if (k < n && (expression.charAt(k) == '+' || expression.charAt(k) == '-')) k++;
+                            if (k < n && Character.isDigit(expression.charAt(k))) {
+                                while (k < n && Character.isDigit(expression.charAt(k))) k++;
+                                j = k;
+                            }
+                        }
                         tokens.add(expression.substring(i, j));
                         i = j;
                         expectOperand = false;
@@ -1560,6 +1570,9 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
                         if (!ops.isEmpty() && isFunction(ops.peek())) {
                             applyTop(ops, values);
                         }
+                    } else if (token.equals("u-")) {
+                        // Prefix operator: nothing to its left to reduce, so never pop.
+                        ops.push(token);
                     } else { // Operator
                         while (!ops.isEmpty() && precedence(ops.peek()) >= precedence(token)) {
                             if (precedence(ops.peek()) == precedence(token) && isRightAssociative(token)) {
@@ -1597,8 +1610,10 @@ public class ScientificCalculator extends JFrame implements ActionListener, KeyL
         }
 
         private static int precedence(String op) {
-            if (op.equals("u-")) return 4;
-            if (op.equals("^")) return 3;
+            // Unary minus binds looser than ^ so -2^2 is -(2^2), as in Desmos and
+            // every standard calculator, but tighter than * and /.
+            if (op.equals("^")) return 4;
+            if (op.equals("u-")) return 3;
             if (op.equals("*") || op.equals("/")) return 2;
             if (op.equals("+") || op.equals("-")) return 1;
             return 0;
